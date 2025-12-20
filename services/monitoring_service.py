@@ -18,7 +18,8 @@ class MonitoringService:
                     WHEN total_in_source > total_in_target THEN 'InCompleted'
                     WHEN total_in_source < total_in_target THEN 'To Be Checked'
                     ELSE 'Completed'
-                end FROM 
+                end AS status
+                FROM 
                 etl_monitoring.daily_count_summary
                 WHERE {filters}
             """,

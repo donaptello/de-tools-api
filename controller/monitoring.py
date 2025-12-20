@@ -4,6 +4,7 @@ from fastapi import APIRouter, Query, Depends
 from services.monitoring_service import MonitoringService
 from fastapi.responses import JSONResponse
 from constants.monitoring import WidgetEnum
+from models.monitoring.monitoring_response import MonitoringTable
 
 app = APIRouter()
 
@@ -19,6 +20,7 @@ def monitoring(
     results = monitoring_obj.get_monitoring(
         name=table_name
     )
+    results_mapped = [MonitoringTable(**raw).dict() for raw in results]
 
     return JSONResponse(
         status_code=200,
@@ -26,7 +28,7 @@ def monitoring(
             "statusCode": 200,
             "messages": "success",
             "timeExecution": time.time() - start_time,
-            "data": results,
+            "data": results_mapped,
         }
     )
 
@@ -39,6 +41,21 @@ def widget(
     results = []
     if type.value == "total_card":
         results = monitoring_obj.get_total_widget()
+        result_mapped = {}
+        for res in results: 
+            if res['status'] == "incompleted": 
+                result_mapped['inCompleted'] = res['total']
+                continue
+            if res['status'] == "completed":  
+                result_mapped['completed'] = res['total']
+                continue
+            if res['status'] == "to_be_checked": 
+                result_mapped['toBeChecked'] = res['total']
+                continue
+            if res['status'] == "total_table": 
+                result_mapped['totalTable'] = res['total']
+                continue
+
         
     return JSONResponse(
         status_code=200,
@@ -46,7 +63,7 @@ def widget(
             "statusCode": 200,
             "messages": "success",
             "timeExecution": time.time() - start_time,
-            "data": results,
+            "data": result_mapped,
         }
     )
 
