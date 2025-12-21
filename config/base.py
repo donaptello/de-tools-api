@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     APACHE_HOP_USER: str
     APACHE_HOP_PASS: str 
 
+    SQLITE_DB: str
+
     class Config: 
         env_file = '.env'
 
