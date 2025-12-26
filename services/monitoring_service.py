@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from config.pg_config import JdbcConfig
 
@@ -27,6 +28,7 @@ class MonitoringService:
         )
         df['lastrun'] = df['lastrun'].astype(str)
         df['date'] = df['date'].astype(str)
+        df.replace({np.NaN: None}, inplace=True)
         conn.connection.close()
         return df.to_dict('records')
     

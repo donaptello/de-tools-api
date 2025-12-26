@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Optional
 
 
 class MonitoringTable(BaseModel): 
@@ -6,10 +7,10 @@ class MonitoringTable(BaseModel):
     lastRunEtl: str = Field(alias="lastrun")
     lastUpdateData: str = Field(alias="date")
     CodeSource: str = Field(alias="data_source", default=None)
-    DbSource: str = Field(alias="source")
-    DbTarget: str = Field(alias="target")
-    RecordSource: int = Field(alias="total_in_source")
-    RecordDwh: int = Field(alias="total_in_target")
+    DbSource: str = Field(alias="source", default=None)
+    DbTarget: str = Field(alias="target", default=None)
+    RecordSource: Optional[int] = Field(alias="total_in_source")
+    RecordDwh: Optional[int] = Field(alias="total_in_target")
     TotalDiffRecord: float = Field(alias="diff")
     status: str = Field(alias="status")
 
