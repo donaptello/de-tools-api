@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query, Depends
 from services.monitoring_service import MonitoringService
 from fastapi.responses import JSONResponse
 from constants.monitoring import WidgetEnum
-from models.monitoring.monitoring_response import MonitoringTable
+from models.monitoring.monitoring_response import MonitoringTable, MonitoringDetail
 
 app = APIRouter()
 
@@ -71,19 +71,22 @@ def widget(
 @app.get('/detail/{table_name}')
 def monitoring_detail(
     table_name: str,
+    limit: int = 100,
     monitoring_obj: MonitoringService = Depends()
 ): 
     start_time = time.time()
     results, total_data = monitoring_obj.get_monitoring_detail(
-        name=table_name
+        name=table_name,
+        limit=limit
     )
+    results_mapped = [MonitoringDetail(**raw).dict() for raw in results]
     return JSONResponse(
         status_code=200,
         content={
             "statusCode": 200,
             "messages": "success",
             "timeExecution": time.time() - start_time,
-            "data": results,
+            "data": results_mapped,
         }
     )
 
