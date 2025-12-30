@@ -85,7 +85,7 @@ class MonitoringService:
         conn.connection.close()
         return df.to_dict('records')
 
-    def get_monitoring_detail(self, name: str): 
+    def get_monitoring_detail(self, name: str, limit: int): 
         conn = self.__pg_obj.client_connect()
 
         df = pd.read_sql(
@@ -93,6 +93,8 @@ class MonitoringService:
                 SELECT * FROM 
                 etl_monitoring.daily_count_detail
                 WHERE table_name = '{name}'
+                ORDER BY date DESC, lastrun DESC
+                LIMIT {limit}
             """,
             con=conn
         )
