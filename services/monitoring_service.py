@@ -16,8 +16,12 @@ class MonitoringService:
             f"""
                 SELECT *, 
                 CASE 
-                    WHEN total_in_source > total_in_target THEN 'InCompleted'
-                    WHEN total_in_source < total_in_target THEN 'To Be Checked'
+                    WHEN total_in_source IS NULL OR total_in_target IS NULL 
+                        THEN 'To Be Checked'
+                    WHEN total_in_source > total_in_target
+                        THEN 'InCompleted'
+                    WHEN total_in_source < total_in_target
+                        THEN 'To Be Checked'
                     ELSE 'Completed'
                 end AS status
                 FROM 
@@ -43,7 +47,7 @@ class MonitoringService:
                 select count(*) as total,
                 'to_be_checked' as status
                 from etl_monitoring.daily_count_summary
-                where total_in_source < total_in_target
+                where total_in_source < total_in_target OR total_in_source IS NULL OR total_in_target IS NULL 
             ), completed as (
                 select count(*) as total,
                 'completed' as status
@@ -54,18 +58,18 @@ class MonitoringService:
                 'total_table' as status
                 from etl_monitoring.daily_count_summary
             )select 
-            total, 
-            status
+                total, 
+                status
             from incompleted 
             union all 
             select 
-            total, 
-            status
+                total, 
+                status
             from completed 
             union all
             select 
-            total, 
-            status
+                total, 
+                status
             from to_be_checked
             union all 
             select 
