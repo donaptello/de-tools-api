@@ -24,7 +24,7 @@ class MonitoringDetail(BaseModel):
     tableName: str = Field(alias="table_name") 
     source: str = Field(alias="source")
     target: Optional[str] = Field(alias="target")
-    total_in_source: Optional[int] = Field(alias="total_in_source")
+    totalInSource: Optional[int] = Field(alias="total_in_source")
     totalInTarget: Optional[int] = Field(alias="total_in_target")
     diff: float = Field(alias="diff")
 
