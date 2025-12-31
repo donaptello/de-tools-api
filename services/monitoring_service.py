@@ -98,6 +98,7 @@ class MonitoringService:
             """,
             con=conn
         )
+        df.replace({np.NaN: None}, inplace=True)
         df['lastrun'] = df['lastrun'].astype(str)
         df['date'] = df['date'].astype(str)
         conn.connection.close()

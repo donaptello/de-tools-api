@@ -22,7 +22,7 @@ class MonitoringDetail(BaseModel):
     date: str = Field(alias="date")
     dataSource: Optional[str] = Field(alias="data_source")
     tableName: str = Field(alias="table_name") 
-    source: str = Field(alias="source")
+    source: Optional[str] = Field(alias="source")
     target: Optional[str] = Field(alias="target")
     totalInSource: Optional[int] = Field(alias="total_in_source")
     totalInTarget: Optional[int] = Field(alias="total_in_target")

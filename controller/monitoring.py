@@ -79,14 +79,25 @@ def monitoring_detail(
         name=table_name,
         limit=limit
     )
-    results_mapped = [MonitoringDetail(**raw).dict() for raw in results]
+    results_mapped = []
+    count_diff = 0
+    for raw in results: 
+        mapped_raw = MonitoringDetail(**raw).dict()
+        results_mapped.append(mapped_raw)
+        if raw['diff'] == 0: 
+            continue
+        count_diff += 1
+
     return JSONResponse(
         status_code=200,
         content={
             "statusCode": 200,
             "messages": "success",
             "timeExecution": time.time() - start_time,
-            "data": results_mapped,
+            "data": {
+                "countDiff": count_diff,
+                "detail": results_mapped
+            },
         }
     )
 
