@@ -46,7 +46,7 @@ class ConnectionService:
         if name is not None: 
             filters = f"name LIKE '%%{name}%%'"
         df = pd.read_sql(
-            f"SELECT * FROM connections WHERE {filters}",
+            f"SELECT * FROM connections WHERE {filters} ORDER BY created_at DESC",
             con=conn
         )
         conn.connection.close()
@@ -67,6 +67,7 @@ class ConnectionService:
         data['id'] = self.__hashing_id(data['name'])
         data['type'] = data['type'].value
         data['configuration'] = json.dumps(data['configuration'])
+        data['created_at'] = int(datetime.now().timestamp())
         df = pd.DataFrame([data])
 
         conn = self.__jdbc_obj.client_sqlite()
