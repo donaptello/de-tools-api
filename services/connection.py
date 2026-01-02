@@ -51,7 +51,6 @@ class ConnectionService:
         )
         conn.connection.close()
         df['configuration'] = df['configuration'].apply(lambda row: json.loads(row))
-        df.rename(columns={'configuration': 'connection'}, inplace=True)
         return df.to_dict("records"), df.shape[0]
     
     def insert_on_conflict_nothing(self, table, conn, keys, data_iter):

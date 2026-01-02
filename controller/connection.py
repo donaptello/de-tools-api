@@ -35,7 +35,7 @@ def insert_connections(
     start_time = time.time()
     connection_svc.insert_data(connection_model.dict())
     return JSONResponse(
-        status_code=200,
+        status_code=201,
         content={
             "statusCode": 201,
             "messages": "Inserted",
