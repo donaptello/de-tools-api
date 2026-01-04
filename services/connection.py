@@ -95,6 +95,7 @@ class ConnectionService:
             method=self.insert_on_conflict_nothing
         )
         conn.connection.close()
+        return df.to_dict('records')[0]
 
     def delete_data(self, id: str): 
         conn = self.__connect()

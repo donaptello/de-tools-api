@@ -53,13 +53,15 @@ def update_connections(
     connection_svc: ConnectionService = Depends(),
 ): 
     start_time = time.time()
-    connection_svc.update_data(id, connection_model.dict())
+    result = connection_svc.update_data(id, connection_model.dict())
+    result['configuration'] = json.loads(result['configuration'])
     return JSONResponse(
         status_code=200,
         content={
             "statusCode": 201,
             "messages": "Updated",
             "timeExecution": time.time() - start_time,
+            "data": result
         }
     )
 
