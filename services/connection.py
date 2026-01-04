@@ -79,6 +79,7 @@ class ConnectionService:
             method=self.insert_on_conflict_nothing
         )
         conn.connection.close()
+        return df.to_dict('records')[0]
 
     def update_data(self, id: str, data: dict): 
         data['id'] = id

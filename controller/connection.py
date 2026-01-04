@@ -1,4 +1,5 @@
 import time
+import json
 
 from loguru import logger
 from fastapi import APIRouter, Query, Depends
@@ -33,13 +34,15 @@ def insert_connections(
     connection_svc: ConnectionService = Depends(),
 ): 
     start_time = time.time()
-    connection_svc.insert_data(connection_model.dict())
+    result = connection_svc.insert_data(connection_model.dict())
+    result['configuration'] = json.loads(result['configuration'])
     return JSONResponse(
         status_code=201,
         content={
             "statusCode": 201,
             "messages": "Inserted",
             "timeExecution": time.time() - start_time,
+            "data": result
         }
     )
 
@@ -74,6 +77,7 @@ def delete_connections(
             "messages": "Delete",
             "timeExecution": time.time() - start_time,
             "data": {
+                "id": id,
                 "foundDelete": count
             }
         }
