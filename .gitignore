@@ -4,3 +4,4 @@
 .venv
 venv
 resources/**
+**/.DS_Store
