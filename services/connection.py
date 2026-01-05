@@ -32,6 +32,7 @@ class ConnectionService:
                     name TEXT,
                     configuration TEXT,
                     type TEXT,
+                    created_at NUMBER,
                     CONSTRAINT connections_pk PRIMARY KEY (id)
                 )
             """
