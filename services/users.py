@@ -83,6 +83,7 @@ class UsersService:
         return df.to_dict('records')[0]
     
     def update_data(self, id: str, data: dict):
+        data['id'] = id
         data['role'] = data['role'].value
 
         conn = self.__jdbc_obj.client_sqlite()
