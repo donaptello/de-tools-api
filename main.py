@@ -9,7 +9,8 @@ from controller import (
     hop,
     monitoring,
     connection,
-    users
+    users,
+    login
 )
  
 @asynccontextmanager
@@ -63,6 +64,7 @@ app.include_router(hop.app, prefix='/v1/hop', tags=['Hop Service'])
 app.include_router(connection.app, prefix='/v1/connection', tags=['Connection Service'])
 app.include_router(monitoring.app, prefix='/v1/monitoring', tags=['Monitoring Service'])
 app.include_router(users.app, prefix='/v1/users', tags=['Users Management Service'])
+app.include_router(login.app, prefix='/v1/auth', tags=['Auth Service'])
 
 # if __name__ == "__main__":
 #     uvicorn.run("main:app", host="127.0.0.1", port=8256, reload=True)

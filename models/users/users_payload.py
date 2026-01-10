@@ -11,3 +11,7 @@ class UserPayload(BaseModel):
     username: str
     password: str
     role: Roles
+
+class Login(BaseModel): 
+    username: str
+    password: str

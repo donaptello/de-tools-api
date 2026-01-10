@@ -6,6 +6,7 @@ from datetime import datetime
 from config.base import settings
 from config.pg_config import JdbcConfig
 from sqlalchemy.dialects.postgresql import insert
+from services.auth_service import AuthService
 
 
 class UsersService: 
@@ -55,6 +56,19 @@ class UsersService:
         conn.connection.close()
         return df.to_dict("records"), df.shape[0]
     
+    def find_one_user(self, username: str): 
+        conn = self.__jdbc_obj.client_sqlite()
+        df = pd.read_sql(
+            f"SELECT id, username, password, role FROM users WHERE username = '{username}'",
+            con=conn
+        )
+        conn.connection.close()
+        
+        if df.shape[0] == 0:
+            return None
+        return df.to_dict('records')[0]
+
+    
     def insert_on_conflict_nothing(self, table, conn, keys, data_iter):
         data = [dict(zip(keys, row)) for row in data_iter]
         insert_statement = insert(table.table).values(data)
@@ -69,6 +83,8 @@ class UsersService:
         data['id'] = self.__hashing_id(data['username'])
         data['role'] = data['role'].value
         data['created_at'] = int(datetime.now().timestamp())
+        auth_service = AuthService()
+        data['password'] = auth_service.hash_password(data['password'])
         df = pd.DataFrame([data])
 
         conn = self.__jdbc_obj.client_sqlite()
