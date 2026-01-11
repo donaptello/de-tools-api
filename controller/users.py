@@ -47,7 +47,7 @@ def insert_users(
         }
     )
 
-@app.put("{id}")
+@app.put("/{id}")
 def update_users(
     users: UserPayload,
     id: str,
@@ -66,7 +66,7 @@ def update_users(
         }
     )
 
-@app.delete("{id}")
+@app.delete("/{id}")
 def delete_users(
     id: str,
     user_svc: UsersService = Depends(),
