@@ -1,5 +1,11 @@
 from pydantic import BaseModel, Field
 from typing import Optional
+from enum import Enum
+
+class Flag(Enum): 
+    silver: str = "silver"
+    bronze: str = "bronze"
+    gold: str = "gold"
 
 
 class MonitoringTable(BaseModel): 
@@ -27,6 +33,22 @@ class MonitoringDetail(BaseModel):
     totalInSource: Optional[int] = Field(alias="total_in_source")
     totalInTarget: Optional[int] = Field(alias="total_in_target")
     diff: float = Field(alias="diff")
+
+    class Config:
+        allow_population_by_field_name = True
+
+class MonitoringParameterResponse(BaseModel): 
+    tableNameSource: str = Field(alias="table_name_source")
+    schemas: Optional[str] = Field(alias="schemas")
+    dbSource: str = Field(alias="db_source")
+    dbTarget: str = Field(alias="db_target")
+    columnDateName: Optional[str] = Field("column_date_name")
+    tableNameTarget: str = Field(alias="table_name_target")
+    dataSourceColumnName: Optional[str] = Field(alias="data_source_column_name")
+    dataSource: Optional[str] = Field(alias="data_source")
+    layer: str = Field(alias="layer")
+    flag: Flag = Field(alias="flag")
+    insertTime: str = Field(alias="insert_time") 
 
     class Config:
         allow_population_by_field_name = True

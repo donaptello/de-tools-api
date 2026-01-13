@@ -4,7 +4,11 @@ from fastapi import APIRouter, Query, Depends
 from services.monitoring_service import MonitoringService
 from fastapi.responses import JSONResponse
 from constants.monitoring import WidgetEnum
-from models.monitoring.monitoring_response import MonitoringTable, MonitoringDetail
+from models.monitoring.monitoring_response import (
+    MonitoringTable, 
+    MonitoringDetail,
+    MonitoringParameterResponse
+)
 
 app = APIRouter()
 
@@ -101,3 +105,27 @@ def monitoring_detail(
         }
     )
 
+@app.get('/parameter')
+def get_params_mapping(
+    name: str = None,
+    flag: str = None,
+    monitoring_obj: MonitoringService = Depends()
+): 
+    start_time = time.time()
+
+    results = monitoring_obj.get_param_mapping(
+        name=name, 
+        flag=flag
+    )
+    result_mapped = [MonitoringParameterResponse(**res).dict() for res in results]
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "statusCode": 200,
+            "messages": "success",
+            "timeExecution": time.time() - start_time,
+            "data": result_mapped,
+        }
+    )
+    
