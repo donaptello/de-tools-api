@@ -1,24 +1,27 @@
 import pandas as pd
 import numpy as np
 
+from datetime import datetime
 from config.pg_config import JdbcConfig
+from models.monitoring.monitoring_payload import MonitoringParameterPayload
 
 
 class MonitoringService: 
     def __init__(self):
         self.__pg_obj: JdbcConfig = JdbcConfig()
 
-    def get_param_mapping(self, name: str, flag: str): 
+    def get_param_mapping(self, name: str, flag: str, layer: str): 
         conn = self.__pg_obj.client_connect()
-        filters = "1=1" if name is None else f"table_name LIKE '%%{name}%%'"
-        layer_filters = "1=1" if flag is None else f"flag = {flag}"
+        filters = "1=1" if name is None else f"table_name_source LIKE '%%{name}%%'"
+        flag_filters = "1=1" if flag is None else f"flag = '{flag}'"
+        layer_filters = "1=1" if flag is None else f"layer = '{layer}'"
 
         df = pd.read_sql(
             f"""
                 SELECT *
                 FROM 
                 etl_monitoring.count_mapping
-                WHERE {filters} AND {layer_filters}
+                WHERE {filters} AND {layer_filters} AND {flag_filters}
             """,
             con=conn
         )
@@ -27,6 +30,36 @@ class MonitoringService:
         df.replace({np.NaN: None}, inplace=True)
         conn.connection.close()
         return df.to_dict('records')
+    
+    def insert_param_mapping(self, payload: dict): 
+        payload['schema'] = payload.pop('schemas')
+        payload['layer'] = payload['layer'].value
+        payload['flag'] = payload['flag'].value
+        payload['insert_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        conn = self.__pg_obj.client_connect()
+        df = pd.DataFrame([payload])
+        df.to_sql(
+            'count_mapping',
+            con=conn,
+            schema='etl_monitoring',
+            if_exists='append',
+            index=False
+        )
+        conn.connection.close()
+        return payload
+    
+    def delete_param_mapping(self, table_name: str, flag: str, layer: str): 
+        conn = self.__pg_obj.client_connect_psycopg()
+        cursor = conn.cursor()
+
+        cursor.execute(f"DELETE FROM connections WHERE table_name_source = '{table_name}' AND flag = '{flag}' AND layer = '{layer}';")
+        result = cursor.rowcount
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return result
 
     def get_monitoring(self, name: str): 
         conn = self.__pg_obj.client_connect()

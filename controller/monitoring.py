@@ -4,10 +4,11 @@ from fastapi import APIRouter, Query, Depends
 from services.monitoring_service import MonitoringService
 from fastapi.responses import JSONResponse
 from constants.monitoring import WidgetEnum
+from models.monitoring.monitoring_payload import MonitoringParameterPayload, Layer, Flag
 from models.monitoring.monitoring_response import (
     MonitoringTable, 
     MonitoringDetail,
-    MonitoringParameterResponse
+    MonitoringParameterResponse,
 )
 
 app = APIRouter()
@@ -108,14 +109,16 @@ def monitoring_detail(
 @app.get('/parameter')
 def get_params_mapping(
     name: str = None,
-    flag: str = None,
+    layer: Layer = Layer.bronze,
+    flag: Flag = Flag.source,
     monitoring_obj: MonitoringService = Depends()
 ): 
     start_time = time.time()
 
     results = monitoring_obj.get_param_mapping(
         name=name, 
-        flag=flag
+        flag=flag.value,
+        layer=layer.value
     )
     result_mapped = [MonitoringParameterResponse(**res).dict() for res in results]
 
@@ -128,4 +131,70 @@ def get_params_mapping(
             "data": result_mapped,
         }
     )
+
+@app.post('/parameter')
+def insert_params_mapping(
+    payload_model: MonitoringParameterPayload,
+    monitoring_obj: MonitoringService = Depends()
+): 
+    start_time = time.time()
+    result = monitoring_obj.insert_param_mapping(payload_model.dict())
+
+    return JSONResponse(
+        status_code=201,
+        content={
+            "statusCode": 201,
+            "messages": "inserted",
+            "timeExecution": time.time() - start_time,
+            "data": result,
+        }
+    )
+
+@app.put('/parameter')
+def update_params_mapping(
+    table_name: str,
+    layer: Layer,
+    flag: Flag,
+    payload_model: MonitoringParameterPayload,
+    monitoring_obj: MonitoringService = Depends()
+): 
+    start_time = time.time()
+    result = monitoring_obj.insert_param_mapping(payload_model.dict())
+
+    return JSONResponse(
+        status_code=201,
+        content={
+            "statusCode": 201,
+            "messages": "inserted",
+            "timeExecution": time.time() - start_time,
+            "data": result,
+        }
+    )
+
+@app.delete('/parameter')
+def delete_params_mapping(
+    table_name: str,
+    layer: Layer,
+    flag: Flag,
+    monitoring_obj: MonitoringService = Depends()
+): 
+    start_time = time.time()
+    result = monitoring_obj.delete_param_mapping(
+        table_name=table_name,
+        flag=flag.value,
+        layer=layer.value
+    )
+
+    return JSONResponse(
+        status_code=201,
+        content={
+            "statusCode": 201,
+            "messages": "inserted",
+            "timeExecution": time.time() - start_time,
+            "data": {
+                "deleted": result
+            },
+        }
+    )
+
     

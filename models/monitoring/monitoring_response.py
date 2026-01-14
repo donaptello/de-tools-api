@@ -47,7 +47,7 @@ class MonitoringParameterResponse(BaseModel):
     dataSourceColumnName: Optional[str] = Field(alias="data_source_column_name")
     dataSource: Optional[str] = Field(alias="data_source")
     layer: str = Field(alias="layer")
-    flag: Flag = Field(alias="flag")
+    flag: str = Field(alias="flag")
     insertTime: str = Field(alias="insert_time") 
 
     class Config:
