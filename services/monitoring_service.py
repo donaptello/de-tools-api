@@ -49,6 +49,58 @@ class MonitoringService:
         conn.connection.close()
         return payload
     
+    def update_param_mapping(
+        self, 
+        table_name: str,
+        layer: str,
+        flag: str,
+        payload: dict
+    ):
+        result_get = self.get_param_mapping(
+            name=table_name,
+            layer=layer,
+            flag=flag
+        )
+        if not len(result_get): 
+            return None
+        
+        data = result_get[0]
+        payload['layer'] = payload['layer'].value
+        payload['flag'] = payload['flag'].value
+
+        conn = self.__pg_obj.client_connect_psycopg()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            f"""
+                UPDATE 
+                    etl_monitoring.count_mapping
+                SET 
+                    table_name_source = %s
+                    schema = %s
+                    db_source = %s
+                    db_target = %s
+                    column_date_name = %s
+                    table_name_target = %s
+                    data_source_column_name = %s
+                    data_source = %s
+                    layer = %s
+                    flag = %s
+                    insert_time = %s
+                WHERE 
+                    table_name_source LIKE '{table_name}'
+                    AND flag = '{flag}'
+                    AND layer = '{layer}'
+            """,
+            payload
+        )
+        row_updated = cursor.rowcount
+
+        cursor.close()
+        conn.close()
+
+        return data
+    
     def delete_param_mapping(self, table_name: str, flag: str, layer: str): 
         conn = self.__pg_obj.client_connect_psycopg()
         cursor = conn.cursor()

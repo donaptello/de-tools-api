@@ -159,13 +159,18 @@ def update_params_mapping(
     monitoring_obj: MonitoringService = Depends()
 ): 
     start_time = time.time()
-    result = monitoring_obj.insert_param_mapping(payload_model.dict())
+    result = monitoring_obj.update_param_mapping(
+        table_name=table_name,
+        layer=layer.value,
+        flag=flag.value,
+        payload=payload_model.dict()
+    )
 
     return JSONResponse(
         status_code=201,
         content={
             "statusCode": 201,
-            "messages": "inserted",
+            "messages": "updated",
             "timeExecution": time.time() - start_time,
             "data": result,
         }
@@ -189,7 +194,7 @@ def delete_params_mapping(
         status_code=201,
         content={
             "statusCode": 201,
-            "messages": "inserted",
+            "messages": "deleted",
             "timeExecution": time.time() - start_time,
             "data": {
                 "deleted": result
