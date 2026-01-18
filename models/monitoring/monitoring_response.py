@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from enum import Enum
 
 class Flag(Enum): 
@@ -37,12 +37,12 @@ class MonitoringDetail(BaseModel):
     class Config:
         allow_population_by_field_name = True
 
-class MonitoringParameterResponse(BaseModel): 
+class MonitoringParameterDetailResponse(BaseModel): 
     tableNameSource: str = Field(alias="table_name_source")
-    schemas: Optional[str] = Field(alias="schemas")
+    schemas: Optional[str] = Field(alias="schema")
     dbSource: str = Field(alias="db_source")
     dbTarget: str = Field(alias="db_target")
-    columnDateName: Optional[str] = Field("column_date_name")
+    columnDateName: Optional[str] = Field(alias="column_date_name")
     tableNameTarget: str = Field(alias="table_name_target")
     dataSourceColumnName: Optional[str] = Field(alias="data_source_column_name")
     dataSource: Optional[str] = Field(alias="data_source")
@@ -52,3 +52,21 @@ class MonitoringParameterResponse(BaseModel):
 
     class Config:
         allow_population_by_field_name = True
+
+class MonitoringParameterResponse(BaseModel): 
+    tableNameSource: str = Field(alias="table_name_source")
+    schemas: Optional[str] = Field(alias="schemas")
+    dbSource: str = Field(alias="db_source")
+    dbTarget: str = Field(alias="db_target")
+    columnDateName: Optional[str] = Field(alias="column_date_name")
+    tableNameTarget: str = Field(alias="table_name_target")
+    dataSourceColumnName: Optional[str] = Field(alias="data_source_column_name")
+    dataSource: Optional[str] = Field(alias="data_source")
+    layer: str = Field(alias="layer")
+    flag: str = Field(alias="flag")
+    details: Optional[List[MonitoringParameterDetailResponse]] = Field(alias="details")
+    insertTime: str = Field(alias="insert_time") 
+
+    class Config:
+        allow_population_by_field_name = True
+

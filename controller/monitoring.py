@@ -1,6 +1,7 @@
 import time
 
 from fastapi import APIRouter, Query, Depends
+from loguru import logger
 from services.monitoring_service import MonitoringService
 from fastapi.responses import JSONResponse
 from constants.monitoring import WidgetEnum
@@ -9,6 +10,7 @@ from models.monitoring.monitoring_response import (
     MonitoringTable, 
     MonitoringDetail,
     MonitoringParameterResponse,
+    MonitoringParameterDetailResponse
 )
 
 app = APIRouter()
@@ -111,16 +113,31 @@ def get_params_mapping(
     name: str = None,
     layer: Layer = Layer.bronze,
     flag: Flag = Flag.source,
+    withDetail: bool = False,
     monitoring_obj: MonitoringService = Depends()
 ): 
     start_time = time.time()
 
-    results = monitoring_obj.get_param_mapping(
-        name=name, 
-        flag=flag.value,
-        layer=layer.value
-    )
-    result_mapped = [MonitoringParameterResponse(**res).dict() for res in results]
+    if not withDetail: 
+        results = monitoring_obj.get_param_mapping(
+            name=name, 
+            flag=flag.value,
+            layer=layer.value
+        )
+        result_mapped = [MonitoringParameterResponse(**res).dict(exclude={"details"}) for res in results]
+    else: 
+        results = monitoring_obj.get_param_detail_mapping(
+            name=name, 
+            flag=flag.value,
+            layer=layer.value
+        )
+        result_mapped = []
+        for _, data in results.items(): 
+            targets = [MonitoringParameterDetailResponse(**res).dict() for res in data['target']]
+            data['source']['details'] = targets
+            source = MonitoringParameterResponse(**data['source'])
+            result_mapped.append(source.dict())
+
 
     return JSONResponse(
         status_code=200,
