@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 
 from datetime import datetime
+from loguru import logger
 from config.pg_config import JdbcConfig
 from models.monitoring.monitoring_payload import MonitoringParameterPayload
 
@@ -67,6 +68,7 @@ class MonitoringService:
         data = result_get[0]
         payload['layer'] = payload['layer'].value
         payload['flag'] = payload['flag'].value
+        data.update(**payload)
 
         conn = self.__pg_obj.client_connect_psycopg()
         cursor = conn.cursor()
@@ -76,30 +78,41 @@ class MonitoringService:
                 UPDATE 
                     etl_monitoring.count_mapping
                 SET 
-                    table_name_source = %s
-                    schema = %s
-                    db_source = %s
-                    db_target = %s
-                    column_date_name = %s
-                    table_name_target = %s
-                    data_source_column_name = %s
-                    data_source = %s
-                    layer = %s
+                    table_name_source = %s,
+                    schema = %s,
+                    db_source = %s,
+                    db_target = %s,
+                    column_date_name = %s,
+                    table_name_target = %s,
+                    data_source_column_name = %s,
+                    data_source = %s,
+                    layer = %s,
                     flag = %s
-                    insert_time = %s
                 WHERE 
-                    table_name_source LIKE '{table_name}'
+                    table_name_source = '{table_name}'
                     AND flag = '{flag}'
                     AND layer = '{layer}'
             """,
-            payload
+            (
+                data['table_name_source'],
+                data['schemas'],
+                data['db_source'],
+                data['db_target'],
+                data['column_date_name'],
+                data['table_name_target'],
+                data['data_source_column_name'],
+                data['data_source'],
+                data['layer'],
+                data['flag']
+            )
         )
+        conn.commit()
         row_updated = cursor.rowcount
 
         cursor.close()
         conn.close()
 
-        return data
+        return data, row_updated
     
     def delete_param_mapping(self, table_name: str, flag: str, layer: str): 
         conn = self.__pg_obj.client_connect_psycopg()

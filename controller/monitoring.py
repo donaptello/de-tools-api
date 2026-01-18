@@ -159,20 +159,33 @@ def update_params_mapping(
     monitoring_obj: MonitoringService = Depends()
 ): 
     start_time = time.time()
-    result = monitoring_obj.update_param_mapping(
+    result, row_updated = monitoring_obj.update_param_mapping(
         table_name=table_name,
         layer=layer.value,
         flag=flag.value,
         payload=payload_model.dict()
     )
-
+    if not result: 
+        return JSONResponse(
+            status_code=404,
+            content={
+                "statusCode": 404,
+                "messages": "not found",
+                "timeExecution": time.time() - start_time,
+                "data": result,
+            }
+        )
+    
     return JSONResponse(
         status_code=201,
         content={
-            "statusCode": 201,
+            "statusCode": 200,
             "messages": "updated",
             "timeExecution": time.time() - start_time,
-            "data": result,
+            "data": {
+                "data": result,
+                "row_updated": row_updated
+            },
         }
     )
 
