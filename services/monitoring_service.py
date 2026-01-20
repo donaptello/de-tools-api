@@ -38,6 +38,7 @@ class MonitoringService:
             if result['table_name_source'] in results_mapped:
                 results_mapped[result["table_name_source"]]['target'].append(
                     {
+                        "id": result['id'],
                         "table_name_source": result['table_name_source'],
                         "schemas": result['schemas'],
                         "db_source": result['db_source'],
@@ -54,6 +55,7 @@ class MonitoringService:
 
             results_mapped[result["table_name_source"]] = {
                 "source": {
+                        "id": result['id'],
                         "table_name_source": result['table_name_source_2'],
                         "schemas": result['schema_2'],
                         "db_source": result['db_source_2'],
@@ -68,6 +70,7 @@ class MonitoringService:
                     },
                 "target": [
                     {
+                        "id": result['id'],
                         "table_name_source": result['table_name_source'],
                         "schemas": result['schemas'],
                         "db_source": result['db_source'],

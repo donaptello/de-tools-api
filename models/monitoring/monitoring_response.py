@@ -9,6 +9,7 @@ class Flag(Enum):
 
 
 class MonitoringTable(BaseModel): 
+    id: int
     tableName: str = Field(alias="table_name")
     lastRunEtl: str = Field(alias="lastrun")
     lastUpdateData: str = Field(alias="date")
@@ -38,6 +39,7 @@ class MonitoringDetail(BaseModel):
         allow_population_by_field_name = True
 
 class MonitoringParameterDetailResponse(BaseModel): 
+    id: int
     tableNameSource: str = Field(alias="table_name_source")
     schemas: Optional[str] = Field(alias="schema")
     dbSource: str = Field(alias="db_source")
@@ -54,6 +56,7 @@ class MonitoringParameterDetailResponse(BaseModel):
         allow_population_by_field_name = True
 
 class MonitoringParameterResponse(BaseModel): 
+    id: int
     tableNameSource: str = Field(alias="table_name_source")
     schemas: Optional[str] = Field(alias="schemas")
     dbSource: str = Field(alias="db_source")
