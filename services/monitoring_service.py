@@ -15,7 +15,8 @@ class MonitoringService:
         conn = self.__pg_obj.client_connect()
         filters = "1=1" if name is None else f"table_name_source LIKE '%%{name}%%'"
         flag_filters = "1=1" if flag is None else f"flag = '{flag}'"
-        layer_filters = "1=1" if flag is None else f"layer = '{layer}'"
+        layer_filters = "1=1" if layer is None else f"layer = '{layer}'"
+        print(layer_filters, layer)
 
         df = pd.read_sql(
             f"""
@@ -93,7 +94,7 @@ class MonitoringService:
         if flag != "source": 
             filters = "1=1" if name is None else f"table_name_target LIKE '%%{name}%%'"
         flag_filters = "1=1" if flag is None else f"flag = '{flag}'"
-        layer_filters = "1=1" if flag is None else f"dt.layer = '{layer}'"
+        layer_filters = "1=1" if layer is None else f"dt.layer = '{layer}'"
 
         df = pd.read_sql(
             f"""

@@ -4,6 +4,7 @@ from enum import Enum
 
 
 class Layer(Enum): 
+    all_layer: str = "all-layer"
     bronze: str = "bronze"
     silver: str = "silver"
     gold: str = "gold"

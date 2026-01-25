@@ -9,7 +9,6 @@ class Flag(Enum):
 
 
 class MonitoringTable(BaseModel): 
-    id: int
     tableName: str = Field(alias="table_name")
     lastRunEtl: str = Field(alias="lastrun")
     lastUpdateData: str = Field(alias="date")

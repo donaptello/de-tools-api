@@ -111,7 +111,7 @@ def monitoring_detail(
 @app.get('/parameter')
 def get_params_mapping(
     name: str = None,
-    layer: Layer = Layer.bronze,
+    layer: Layer = Layer.all_layer,
     flag: Flag = Flag.source,
     withDetail: bool = False,
     monitoring_obj: MonitoringService = Depends()
@@ -122,14 +122,14 @@ def get_params_mapping(
         results = monitoring_obj.get_param_mapping(
             name=name, 
             flag=flag.value,
-            layer=layer.value
+            layer=layer.value if layer.value != "all-layer" else None
         )
         result_mapped = [MonitoringParameterResponse(**res).dict(exclude={"details"}) for res in results]
     else: 
         results = monitoring_obj.get_param_detail_mapping(
             name=name, 
             flag=flag.value,
-            layer=layer.value
+            layer=layer.value if layer.value != "all-layer" else None
         )
         result_mapped = []
         for _, data in results.items(): 
