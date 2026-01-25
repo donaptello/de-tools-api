@@ -176,7 +176,7 @@ class MonitoringService:
             f"""
                 {query_datas}
                 {flag_logic}
-                order by dt.table_name_source asc, ds.table_name_target asc, ds.insert_time desc;
+                order by ds.insert_time desc, dt.insert_time desc;
             """,
             con=conn
         )
