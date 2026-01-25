@@ -24,6 +24,7 @@ class MonitoringService:
                 FROM 
                 etl_monitoring.count_mapping
                 WHERE {filters} AND {layer_filters} AND {flag_filters}
+                ORDER BY insert_time DESC
             """,
             con=conn
         )
@@ -33,30 +34,49 @@ class MonitoringService:
         conn.connection.close()
         return df.to_dict('records')
     
-    def __mapping_results(self, results: list):
+    def __mapping_results(self, results: list, flag: str):
         results_mapped = {}
         for result in results: 
-            if result['table_name_source'] in results_mapped:
-                results_mapped[result["table_name_source"]]['target'].append(
-                    {
-                        "id": result['id'],
-                        "table_name_source": result['table_name_source'],
-                        "schemas": result['schemas'],
-                        "db_source": result['db_source'],
-                        "db_target": result['db_target'],
-                        "column_date_name": result['column_date_name'],
-                        "table_name_target": result['table_name_target'],
-                        "data_source_column_name": result['data_source_column_name'],
-                        "data_source": result['data_source'],
-                        "layer": result['layer'],
-                        "flag": result['flag'],
-                        "insert_time": result['insert_time'],
-                    }
-                )
+            if flag == 'source': 
+                if result['table_name_source'] in results_mapped:
+                    results_mapped[result["table_name_source"]]['target'].append(
+                        {
+                            "id": result['id_2'],
+                            "table_name_source": result['table_name_source_2'],
+                            "schemas": result['schema_2'],
+                            "db_source": result['db_source_2'],
+                            "db_target": result['db_target_2'],
+                            "column_date_name": result['column_date_name_2'],
+                            "table_name_target": result['table_name_target_2'],
+                            "data_source_column_name": result['data_source_column_name_2'],
+                            "data_source": result['data_source_2'],
+                            "layer": result['layer_2'],
+                            "flag": result['flag_2'],
+                            "insert_time": result['insert_time_2'],
+                        }
+                    )
+                    continue
 
-            results_mapped[result["table_name_source"]] = {
-                "source": {
-                        "id": result['id'],
+                results_mapped[result["table_name_source"]] = {
+                    "source": {
+                            "id": result['id'],
+                            "table_name_source": result['table_name_source'],
+                            "schemas": result['schemas'],
+                            "db_source": result['db_source'],
+                            "db_target": result['db_target'],
+                            "column_date_name": result['column_date_name'],
+                            "table_name_target": result['table_name_target'],
+                            "data_source_column_name": result['data_source_column_name'],
+                            "data_source": result['data_source'],
+                            "layer": result['layer'],
+                            "flag": result['flag'],
+                            "insert_time": result['insert_time'],
+                        },
+                    "target": []
+                }
+                if result['id_2'] is not None: 
+                    results_mapped[result['table_name_source']]['target'].append({
+                        "id": result['id_2'],
                         "table_name_source": result['table_name_source_2'],
                         "schemas": result['schema_2'],
                         "db_source": result['db_source_2'],
@@ -68,9 +88,29 @@ class MonitoringService:
                         "layer": result['layer_2'],
                         "flag": result['flag_2'],
                         "insert_time": result['insert_time_2'],
-                    },
-                "target": [
-                    {
+                    })
+            else: 
+                if result['table_name_target'] in results_mapped:
+                    results_mapped[result["table_name_target"]]['source'].append(
+                        {
+                            "id": result['id_2'],
+                            "table_name_source": result['table_name_source_2'],
+                            "schemas": result['schema_2'],
+                            "db_source": result['db_source_2'],
+                            "db_target": result['db_target_2'],
+                            "column_date_name": result['column_date_name_2'],
+                            "table_name_target": result['table_name_target_2'],
+                            "data_source_column_name": result['data_source_column_name_2'],
+                            "data_source": result['data_source_2'],
+                            "layer": result['layer_2'],
+                            "flag": result['flag_2'],
+                            "insert_time": result['insert_time_2'],
+                        }
+                    )
+                    continue
+
+                results_mapped[result["table_name_target"]] = {
+                    "target": {
                         "id": result['id'],
                         "table_name_source": result['table_name_source'],
                         "schemas": result['schemas'],
@@ -83,31 +123,60 @@ class MonitoringService:
                         "layer": result['layer'],
                         "flag": result['flag'],
                         "insert_time": result['insert_time'],
-                    }
-                ]
-            }
+                    },
+                    "source": []    
+                }
+                if result['id_2'] is not None: 
+                    results_mapped[result["table_name_target"]]['source'].append({
+                        "id": result['id_2'],
+                        "table_name_source": result['table_name_source_2'],
+                        "schemas": result['schema_2'],
+                        "db_source": result['db_source_2'],
+                        "db_target": result['db_target_2'],
+                        "column_date_name": result['column_date_name_2'],
+                        "table_name_target": result['table_name_target_2'],
+                        "data_source_column_name": result['data_source_column_name_2'],
+                        "data_source": result['data_source_2'],
+                        "layer": result['layer_2'],
+                        "flag": result['flag_2'],
+                        "insert_time": result['insert_time_2'],
+                    })
         return results_mapped
+        
     
     def get_param_detail_mapping(self, name: str, flag: str, layer: str): 
+        print(flag)
         conn = self.__pg_obj.client_connect()
         filters = "1=1" if name is None else f"table_name_source LIKE '%%{name}%%'"
-        if flag != "source": 
-            filters = "1=1" if name is None else f"table_name_target LIKE '%%{name}%%'"
-        flag_filters = "1=1" if flag is None else f"flag = '{flag}'"
-        layer_filters = "1=1" if layer is None else f"dt.layer = '{layer}'"
+        flag_logic = "select ds.*, dt.* from data_source ds left join data_target dt on ds.table_name_target = dt.table_name_target" if flag == 'source' else f"select dt.*, ds.* from data_target dt left join data_source  ds on dt.table_name_target = ds.table_name_target"
+        layer_filters = "1=1" if layer is None else f"layer = '{layer}'"
 
-        df = pd.read_sql(
-            f"""
+        if flag == "source": 
+            query_datas = f"""
                 with data_target as (
                     select * from etl_monitoring.count_mapping cm  
-                    where flag = 'target' and {filters}
+                    where flag = 'target'
+                ), data_source as (
+                    select * from etl_monitoring.count_mapping cm  
+                    where flag = 'source' and {filters} and {layer_filters}
+                )
+            """
+        else: 
+            query_datas = f"""
+                with data_target as (
+                    select * from etl_monitoring.count_mapping cm  
+                    where flag = 'target' and {filters} and {layer_filters}
                 ), data_source as (
                     select * from etl_monitoring.count_mapping cm  
                     where flag = 'source'
-                )select dt.*, ds.* from data_source dt 
-                join data_target ds on dt.table_name_target = ds.table_name_target
-                where {layer_filters}
-                order by dt.table_name_source asc, ds.table_name_target asc
+                )
+            """
+
+        df = pd.read_sql(
+            f"""
+                {query_datas}
+                {flag_logic}
+                order by dt.table_name_source asc, ds.table_name_target asc, ds.insert_time desc;
             """,
             con=conn
         )
@@ -122,7 +191,7 @@ class MonitoringService:
         df.replace({np.NaN: None}, inplace=True)
         conn.connection.close()
 
-        return self.__mapping_results(df.to_dict('records'))
+        return self.__mapping_results(df.to_dict('records'), flag)
     
     def insert_param_mapping(self, payload: dict): 
         payload['schema'] = payload.pop('schemas')
@@ -206,11 +275,11 @@ class MonitoringService:
 
         return data, row_updated
     
-    def delete_param_mapping(self, table_name: str, flag: str, layer: str): 
+    def delete_param_mapping(self, id: int): 
         conn = self.__pg_obj.client_connect_psycopg()
         cursor = conn.cursor()
 
-        cursor.execute(f"DELETE FROM connections WHERE table_name_source = '{table_name}' AND flag = '{flag}' AND layer = '{layer}';")
+        cursor.execute(f"DELETE FROM etl_monitoring.count_mapping WHERE id = {id}")
         result = cursor.rowcount
 
         conn.commit()

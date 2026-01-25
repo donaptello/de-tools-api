@@ -56,16 +56,16 @@ class MonitoringParameterDetailResponse(BaseModel):
 
 class MonitoringParameterResponse(BaseModel): 
     id: int
-    tableNameSource: str = Field(alias="table_name_source")
+    tableNameSource: Optional[str] = Field(alias="table_name_source")
     schemas: Optional[str] = Field(alias="schemas")
-    dbSource: str = Field(alias="db_source")
-    dbTarget: str = Field(alias="db_target")
+    dbSource: Optional[str] = Field(alias="db_source")
+    dbTarget: Optional[str] = Field(alias="db_target")
     columnDateName: Optional[str] = Field(alias="column_date_name")
-    tableNameTarget: str = Field(alias="table_name_target")
+    tableNameTarget: Optional[str] = Field(alias="table_name_target")
     dataSourceColumnName: Optional[str] = Field(alias="data_source_column_name")
     dataSource: Optional[str] = Field(alias="data_source")
-    layer: str = Field(alias="layer")
-    flag: str = Field(alias="flag")
+    layer: Optional[str] = Field(alias="layer")
+    flag: Optional[str] = Field(alias="flag")
     details: Optional[List[MonitoringParameterDetailResponse]] = Field(alias="details")
     insertTime: str = Field(alias="insert_time") 
 

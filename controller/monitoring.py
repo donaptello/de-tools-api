@@ -1,4 +1,5 @@
 import time
+import json
 
 from fastapi import APIRouter, Query, Depends
 from loguru import logger
@@ -132,11 +133,18 @@ def get_params_mapping(
             layer=layer.value if layer.value != "all-layer" else None
         )
         result_mapped = []
-        for _, data in results.items(): 
-            targets = [MonitoringParameterDetailResponse(**res).dict() for res in data['target']]
-            data['source']['details'] = targets
-            source = MonitoringParameterResponse(**data['source'])
-            result_mapped.append(source.dict())
+        if flag.value == 'target': 
+            for _, data in results.items(): 
+                targets = [MonitoringParameterDetailResponse(**res).dict() for res in data['source']]
+                data['target']['details'] = targets
+                source = MonitoringParameterResponse(**data['target'])
+                result_mapped.append(source.dict())
+        else: 
+            for _, data in results.items(): 
+                sources = [MonitoringParameterDetailResponse(**res).dict() for res in data['target']]
+                data['source']['details'] = sources
+                source = MonitoringParameterResponse(**data['source'])
+                result_mapped.append(source.dict())
 
 
     return JSONResponse(
@@ -148,6 +156,13 @@ def get_params_mapping(
             "data": result_mapped,
         }
     )
+
+@app.get('/parameter/{id}')
+def get_params_mapping_detail(
+    id: int,
+    monitoring_obj: MonitoringService = Depends()
+):
+    pass
 
 @app.post('/parameter')
 def insert_params_mapping(
@@ -206,18 +221,14 @@ def update_params_mapping(
         }
     )
 
-@app.delete('/parameter')
+@app.delete('/parameter/{id}')
 def delete_params_mapping(
-    table_name: str,
-    layer: Layer,
-    flag: Flag,
+    id: int,
     monitoring_obj: MonitoringService = Depends()
 ): 
     start_time = time.time()
     result = monitoring_obj.delete_param_mapping(
-        table_name=table_name,
-        flag=flag.value,
-        layer=layer.value
+        id=id
     )
 
     return JSONResponse(
