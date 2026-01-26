@@ -38,8 +38,10 @@ class MonitoringService:
         results_mapped = {}
         for result in results: 
             if flag == 'source': 
-                if result['table_name_source'] in results_mapped:
-                    results_mapped[result["table_name_source"]]['target'].append(
+
+                key = f"{result['table_name_source']}_{result['schemas']}_{result['db_source']}"
+                if key in results_mapped:
+                    results_mapped[key]['target'].append(
                         {
                             "id": result['id_2'],
                             "table_name_source": result['table_name_source_2'],
@@ -57,7 +59,7 @@ class MonitoringService:
                     )
                     continue
 
-                results_mapped[result["table_name_source"]] = {
+                results_mapped[key] = {
                     "source": {
                             "id": result['id'],
                             "table_name_source": result['table_name_source'],
@@ -75,7 +77,7 @@ class MonitoringService:
                     "target": []
                 }
                 if result['id_2'] is not None: 
-                    results_mapped[result['table_name_source']]['target'].append({
+                    results_mapped[key]['target'].append({
                         "id": result['id_2'],
                         "table_name_source": result['table_name_source_2'],
                         "schemas": result['schema_2'],
@@ -90,8 +92,10 @@ class MonitoringService:
                         "insert_time": result['insert_time_2'],
                     })
             else: 
-                if result['table_name_target'] in results_mapped:
-                    results_mapped[result["table_name_target"]]['source'].append(
+
+                key = f"{result['table_name_target']}_{result['db_target']}"
+                if key in results_mapped:
+                    results_mapped[key]['source'].append(
                         {
                             "id": result['id_2'],
                             "table_name_source": result['table_name_source_2'],
@@ -109,7 +113,7 @@ class MonitoringService:
                     )
                     continue
 
-                results_mapped[result["table_name_target"]] = {
+                results_mapped[key] = {
                     "target": {
                         "id": result['id'],
                         "table_name_source": result['table_name_source'],
@@ -127,7 +131,7 @@ class MonitoringService:
                     "source": []    
                 }
                 if result['id_2'] is not None: 
-                    results_mapped[result["table_name_target"]]['source'].append({
+                    results_mapped[key]['source'].append({
                         "id": result['id_2'],
                         "table_name_source": result['table_name_source_2'],
                         "schemas": result['schema_2'],
@@ -180,6 +184,12 @@ class MonitoringService:
             """,
             con=conn
         )
+        print(df)
+        print(f"""
+            {query_datas}
+            {flag_logic}
+            order by ds.insert_time desc, dt.insert_time desc;
+        """)
         cols = df.columns.to_series()
         series = cols.groupby(cols).cumcount() 
         new_columns = [f"{c}_{i+1}" if i > 0 and c == name else c for c, i, name in zip(cols, series, cols)]
