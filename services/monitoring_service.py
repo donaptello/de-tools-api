@@ -150,7 +150,6 @@ class MonitoringService:
                         "flag": result['flag_2'],
                         "insert_time": result['insert_time_2'],
                     })
-        print(results_mapped)
         return results_mapped
         
     
@@ -193,7 +192,6 @@ class MonitoringService:
         series = cols.groupby(cols).cumcount() 
         new_columns = [f"{c}_{i+1}" if i > 0 and c == name else c for c, i, name in zip(cols, series, cols)]
         df.columns = new_columns
-        print(df)
 
         df.rename(columns={'schema': 'schemas'}, inplace=True)
         df['insert_time'] = df['insert_time'].astype(str)
