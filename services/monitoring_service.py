@@ -149,7 +149,6 @@ class MonitoringService:
         
     
     def get_param_detail_mapping(self, name: str, flag: str, layer: str): 
-        print(flag)
         conn = self.__pg_obj.client_connect()
         filters = "1=1" if name is None else f"table_name_source LIKE '%%{name}%%'"
         flag_logic = "select ds.*, dt.* from data_source ds left join data_target dt on ds.table_name_target = dt.table_name_target" if flag == 'source' else f"select dt.*, ds.* from data_target dt left join data_source  ds on dt.table_name_target = ds.table_name_target"
@@ -184,12 +183,6 @@ class MonitoringService:
             """,
             con=conn
         )
-        print(df)
-        print(f"""
-            {query_datas}
-            {flag_logic}
-            order by ds.insert_time desc, dt.insert_time desc;
-        """)
         cols = df.columns.to_series()
         series = cols.groupby(cols).cumcount() 
         new_columns = [f"{c}_{i+1}" if i > 0 and c == name else c for c, i, name in zip(cols, series, cols)]
