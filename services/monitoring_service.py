@@ -41,6 +41,9 @@ class MonitoringService:
 
                 key = f"{result['table_name_source']}_{result['schemas']}_{result['db_source']}"
                 if key in results_mapped:
+                    if result['id_2'] is None:
+                        continue
+
                     results_mapped[key]['target'].append(
                         {
                             "id": result['id_2'],
@@ -55,7 +58,7 @@ class MonitoringService:
                             "layer": result['layer_2'],
                             "flag": result['flag_2'],
                             "insert_time": result['insert_time_2'],
-                        }
+                        } 
                     )
                     continue
 
@@ -95,6 +98,8 @@ class MonitoringService:
 
                 key = f"{result['table_name_target']}_{result['db_target']}"
                 if key in results_mapped:
+                    if result['id_2'] is None:
+                        continue
                     results_mapped[key]['source'].append(
                         {
                             "id": result['id_2'],
@@ -145,6 +150,7 @@ class MonitoringService:
                         "flag": result['flag_2'],
                         "insert_time": result['insert_time_2'],
                     })
+        print(results_mapped)
         return results_mapped
         
     
@@ -187,6 +193,7 @@ class MonitoringService:
         series = cols.groupby(cols).cumcount() 
         new_columns = [f"{c}_{i+1}" if i > 0 and c == name else c for c, i, name in zip(cols, series, cols)]
         df.columns = new_columns
+        print(df)
 
         df.rename(columns={'schema': 'schemas'}, inplace=True)
         df['insert_time'] = df['insert_time'].astype(str)
