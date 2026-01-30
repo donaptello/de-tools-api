@@ -184,17 +184,12 @@ def insert_params_mapping(
 
 @app.put('/parameter')
 def update_params_mapping(
-    table_name: str,
-    layer: Layer,
-    flag: Flag,
+    id: int,
     payload_model: MonitoringParameterPayload,
     monitoring_obj: MonitoringService = Depends()
 ): 
     start_time = time.time()
     result, row_updated = monitoring_obj.update_param_mapping(
-        table_name=table_name,
-        layer=layer.value,
-        flag=flag.value,
         payload=payload_model.dict()
     )
     if not result: 
