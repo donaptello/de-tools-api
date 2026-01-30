@@ -190,6 +190,7 @@ def update_params_mapping(
 ): 
     start_time = time.time()
     result, row_updated = monitoring_obj.update_param_mapping(
+        id=id,
         payload=payload_model.dict()
     )
     if not result: 

@@ -16,7 +16,6 @@ class MonitoringService:
         filters = "1=1" if name is None else f"table_name_source LIKE '%%{name}%%'"
         flag_filters = "1=1" if flag is None else f"flag = '{flag}'"
         layer_filters = "1=1" if layer is None else f"layer = '{layer}'"
-        print(layer_filters, layer)
 
         df = pd.read_sql(
             f"""
@@ -25,6 +24,23 @@ class MonitoringService:
                 etl_monitoring.count_mapping
                 WHERE {filters} AND {layer_filters} AND {flag_filters}
                 ORDER BY insert_time DESC
+            """,
+            con=conn
+        )
+        df.rename(columns={'schema': 'schemas'}, inplace=True)
+        df['insert_time'] = df['insert_time'].astype(str)
+        df.replace({np.NaN: None}, inplace=True)
+        conn.connection.close()
+        return df.to_dict('records')
+    
+    def find_param_mapping_by_id(self, id: int): 
+        conn = self.__pg_obj.client_connect()
+        df = pd.read_sql(
+            f"""
+                SELECT *
+                FROM 
+                etl_monitoring.count_mapping
+                WHERE id = {id}
             """,
             con=conn
         )
@@ -221,16 +237,10 @@ class MonitoringService:
     
     def update_param_mapping(
         self, 
-        table_name: str,
-        layer: str,
-        flag: str,
+        id: int,
         payload: dict
     ):
-        result_get = self.get_param_mapping(
-            name=table_name,
-            layer=layer,
-            flag=flag
-        )
+        result_get = self.find_param_mapping_by_id(id)
         if not len(result_get): 
             return None
         
@@ -258,9 +268,7 @@ class MonitoringService:
                     layer = %s,
                     flag = %s
                 WHERE 
-                    table_name_source = '{table_name}'
-                    AND flag = '{flag}'
-                    AND layer = '{layer}'
+                    id = {id}
             """,
             (
                 data['table_name_source'],
