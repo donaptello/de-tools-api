@@ -23,5 +23,5 @@ class MonitoringParameterPayload(BaseModel):
     table_name_target: str = Field(alias="tableNameTarget")
     data_source_column_name: str = Field(alias="dataSourceColumnName")
     data_source: Optional[str] = Field(alias="dataSource") 
-    layer: Layer
+    layer: Layer = Field(default=Layer.bronze)
     flag: Flag

@@ -182,7 +182,7 @@ def insert_params_mapping(
         }
     )
 
-@app.put('/parameter')
+@app.put('/parameter/{id}')
 def update_params_mapping(
     id: int,
     payload_model: MonitoringParameterPayload,
