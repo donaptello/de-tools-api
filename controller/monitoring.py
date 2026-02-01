@@ -204,14 +204,15 @@ def update_params_mapping(
             }
         )
     
+    result_mapped = MonitoringParameterResponse(**result).dict(exclude={"details"})
     return JSONResponse(
-        status_code=201,
+        status_code=200,
         content={
             "statusCode": 200,
             "messages": "updated",
             "timeExecution": time.time() - start_time,
             "data": {
-                "data": result,
+                "data": result_mapped,
                 "row_updated": row_updated
             },
         }
