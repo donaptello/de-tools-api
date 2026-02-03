@@ -99,7 +99,15 @@ class HopService:
                         self.__process_delete_workflow(res)
                     already_delete.append(res)
                     continue
- 
+                
+                if with_error and res['status'] == "Stopped":
+                    if res['type'] == 'pipeline':
+                        self.__process_delete_pipeline(res)
+                    elif res['type'] == 'workflow':
+                        self.__process_delete_workflow(res)
+                    already_delete.append(res)
+                    continue
+
                 if res['status'] != "Finished":
                     continue
                 if res['type'] == 'pipeline':
