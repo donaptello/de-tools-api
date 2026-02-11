@@ -1,4 +1,5 @@
 import requests
+import traceback
  
 from config.base import settings
 from bs4 import BeautifulSoup
@@ -61,10 +62,10 @@ class HopService:
                     break
             results_all_mapped.append(result_mapped)
         if self.__mode == "Pipeline":
-            return results_all_mapped[0]
+            return results_all_mapped, "Pipeline"
         elif self.__mode == "Workflow":
-            return results_all_mapped[1]
-        return results_all_mapped
+            return results_all_mapped, "Workflow"
+        return results_all_mapped, "All"
    
     def __process_delete_pipeline(self, res: dict):
         url = f"http://{self.__host}:{self.__port}/hop/removePipeline/?name={res['name_pipeline']}&id={res['id_pipeline']}"
@@ -85,22 +86,16 @@ class HopService:
             data=payload
         )
         print(response.text)
-   
-    def delete_pipeline(self, with_error: bool):
-        results = self.get_pipeline()
- 
-        already_delete = []
-        for res in results:
+
+    def __process_delete_hit_api_hop(
+        self, 
+        with_error: bool, 
+        results_data: list,
+        already_delete: list
+    ): 
+        for res in results_data:
             try:
-                if with_error and res['status'] == "Finished (with errors)":
-                    if res['type'] == 'pipeline':
-                        self.__process_delete_pipeline(res)
-                    elif res['type'] == 'workflow':
-                        self.__process_delete_workflow(res)
-                    already_delete.append(res)
-                    continue
-                
-                if with_error and res['status'] == "Stopped":
+                if with_error and res['status'] in ["Finished (with errors)", "Stopped", "Stopped (with errors)"]:
                     if res['type'] == 'pipeline':
                         self.__process_delete_pipeline(res)
                     elif res['type'] == 'workflow':
@@ -117,5 +112,35 @@ class HopService:
                 already_delete.append(res)
             except Exception as e:
                 logger.error("Error: {}", str(e))
+                traceback.print_exc()
+   
+    def delete_pipeline(self, with_error: bool):
+        results_data, type_process = self.get_pipeline()
+        already_delete = []
+        
+        if type_process == "Pipeline": 
+            results_data = results_data[0]
+            self.__process_delete_hit_api_hop(
+                with_error, 
+                result,
+                already_delete
+            )
+
+        elif type_process == "Workflow": 
+            results_data = results_data[1]
+            self.__process_delete_hit_api_hop(
+                with_error, 
+                result,
+                already_delete
+            )
+
+        else: 
+            for result in results_data:
+                self.__process_delete_hit_api_hop(
+                    with_error, 
+                    result,
+                    already_delete
+                )
+                
         return already_delete
  
