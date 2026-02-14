@@ -43,6 +43,6 @@ def login(
     return JSONResponse(
         status_code=201,
         content={
-            "access_token": token
+            "accessToken": token
         }
     )
