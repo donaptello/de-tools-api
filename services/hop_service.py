@@ -122,7 +122,7 @@ class HopService:
             results_data = results_data[0]
             self.__process_delete_hit_api_hop(
                 with_error, 
-                result,
+                results_data,
                 already_delete
             )
 
@@ -130,7 +130,7 @@ class HopService:
             results_data = results_data[1]
             self.__process_delete_hit_api_hop(
                 with_error, 
-                result,
+                results_data,
                 already_delete
             )
 
