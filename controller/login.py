@@ -16,18 +16,18 @@ def login(
 ): 
     user_data = user_svc.find_one_user(login_data.username)
     if not user_data: 
-        return HTTPException(
+        return JSONResponse(
             status_code=404,
-            detail={
+            content={
                 'statusCode': 404,
                 "messages": "Username not found"
             }
         )
     
     if not(auth_svc.verify_password(login_data.password, user_data["password"])):
-        return HTTPException(
+        return JSONResponse(
             status_code=401,
-            detail={
+            content={
                 'statusCode': 401,
                 "messages": "Invalid Password"
             }
