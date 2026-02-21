@@ -63,7 +63,6 @@ class AuthService:
             return token_data, payload
 
         except JWTError as err: 
-            traceback.print_exc()
             raise self.response_failed("Token Is Expired")
 
     def get_current_user(self, tokens:str = Depends(oauth2_scheme)): 
