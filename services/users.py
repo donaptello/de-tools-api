@@ -43,13 +43,16 @@ class UsersService:
         cursor.close()
         conn.close()
 
-    def get_users(self, name: str): 
+    def get_users(self, name: str, role: str): 
         conn = self.__jdbc_obj.client_sqlite()
         filters = "1+1"
+        filters_role = "1+1"
         if name is not None: 
             filters = f"user_full_name LIKE '%%{name}%%' OR username LIKE '%%{name}%%'"
+        if role is not None: 
+            filters_role = f"role = '{role}'"
         df = pd.read_sql(
-            f"SELECT * FROM users WHERE {filters} ORDER BY created_at DESC",
+            f"SELECT * FROM users WHERE {filters} AND {filters_role} ORDER BY created_at DESC",
             con=conn
         )
         df.drop(columns=["password"], inplace=True)

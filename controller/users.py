@@ -5,6 +5,7 @@ from fastapi import APIRouter, Query, Depends
 from services.users import UsersService
 from models.users.users_payload import UserPayload
 from services.auth_service import AuthService
+from models.users.users_payload import Roles
 from loguru import logger
 
 app = APIRouter()
@@ -12,12 +13,13 @@ app = APIRouter()
 
 @app.get("")
 def get_users(
-    search: str = Query(default=None),
+    name: str = Query(default=None),
+    role: str = Query(default=None),
     user_svc: UsersService = Depends(),
     current_users: dict = Depends(AuthService().get_current_user)
 ): 
     start_time = time.time()
-    results,_ = user_svc.get_users(search)
+    results,_ = user_svc.get_users(name, role)
     return JSONResponse(
         status_code=200,
         content={
