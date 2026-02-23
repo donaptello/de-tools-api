@@ -6,6 +6,7 @@ from fastapi import APIRouter, Query, Depends
 from fastapi.responses import JSONResponse
 from services.connection import ConnectionService
 from models.connections.connections_payload import Connection
+from services.auth_service import AuthService
 
 
 app = APIRouter()
@@ -15,6 +16,7 @@ app = APIRouter()
 def connections(
     name: str = Query(default=None),
     connection_svc: ConnectionService = Depends(),
+    current_users: dict = Depends(AuthService().get_current_user)
 ): 
     start_time = time.time()
     results,_ = connection_svc.get_connection(name=name)
@@ -32,6 +34,7 @@ def connections(
 def insert_connections(
     connection_model: Connection,
     connection_svc: ConnectionService = Depends(),
+    current_users: dict = Depends(AuthService().get_current_user)
 ): 
     start_time = time.time()
     result = connection_svc.insert_data(connection_model.dict())
@@ -51,6 +54,7 @@ def update_connections(
     id: str,
     connection_model: Connection,
     connection_svc: ConnectionService = Depends(),
+    current_users: dict = Depends(AuthService().get_current_user)
 ): 
     start_time = time.time()
     result = connection_svc.update_data(id, connection_model.dict())
@@ -69,6 +73,7 @@ def update_connections(
 def delete_connections(
     id: str,
     connection_svc: ConnectionService = Depends(),
+    current_users: dict = Depends(AuthService().get_current_user)
 ): 
     start_time = time.time()
     count = connection_svc.delete_data(id=id)
