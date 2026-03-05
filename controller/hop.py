@@ -4,6 +4,19 @@ from fastapi.responses import JSONResponse
 from constants.hop import HopMode
  
 app = APIRouter()
+
+@app.get('/status')
+def get_hop_status(): 
+    hop_service = HopService(test=True)
+    results = hop_service.get_status()
+    return JSONResponse(
+        status_code=200,
+        content={
+            "statusCode": 200,
+            "messages": "success",
+            "data": results
+        }
+    )
  
 @app.get('/pipeline-log')
 def get_pipeline_log(

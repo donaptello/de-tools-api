@@ -1,4 +1,5 @@
 import requests
+import json
 import traceback
  
 from config.base import settings
@@ -7,12 +8,94 @@ from loguru import logger
  
 class HopService:
  
-    def __init__(self, mode: str):
+    def __init__(self, mode: str = None, test: bool = False):
         self.__host: str = settings.APACHE_HOP_HOST
         self.__port: str = settings.APACHE_HOP_PORT
         self.__username: str = settings.APACHE_HOP_USER
         self.__password: str = settings.APACHE_HOP_PASS
         self.__mode: str = mode
+        self.__test: bool = test
+
+    def __api_hop(self, method: str, route: str, param_id: str = None): 
+        if self.__test: 
+            if route == "status": 
+                with open('resources/hop-status-response.json', 'r') as file: 
+                    resp = json.load(file)
+            else: 
+                with open('resources/hop-status-response.json', 'r') as file: 
+                    resp = json.load(file)
+            return resp
+        
+        uri = f"http://{self.__host}:{self.__port}{route}?json=y"
+        if param_id is not None: 
+            uri = f"http://{self.__host}:{self.__port}{route}?id={param_id}&json=y"
+        
+        resp = requests.request(
+            method,
+            uri,
+            auth=(self.__username, self.__password)
+        )
+        if resp.status_code == 200:
+            return resp.json()
+        return {'error': resp.text}
+    
+    def get_status(self):
+        resp = self.__api_hop(
+            method="GET",
+            route="/hop/status" if self.__test else "status"
+        )
+        if 'error' in resp: 
+            return resp
+        return {
+            "statusHop": resp.get("statusDescription"),
+            "pipelineStatus": {
+                "total": len(resp.get("pipelineStatusList")),
+                "totalRunning": len([
+                    pipeline
+                    for pipeline in resp['pipelineStatusList']
+                    if pipeline['running'] is True
+                ]),
+                "totalFinished": len([
+                    pipeline
+                    for pipeline in resp['pipelineStatusList']
+                    if pipeline['finished'] is True
+                ]),
+                "totalError": len([
+                    pipeline
+                    for pipeline in resp['pipelineStatusList']
+                    if pipeline['stopped'] is True 
+                        or pipeline['waiting'] is True 
+                        or pipeline['paused'] is True
+                ]),
+            },
+            "totalWorkflow": {
+                "total": len(resp.get("workflowStatusList")),
+                "totalRunning": len([
+                    workflow
+                    for workflow in resp['workflowStatusList']
+                    if workflow['running'] is True
+                ]),
+                "totalFinished": len([
+                    workflow
+                    for workflow in resp['workflowStatusList']
+                    if workflow['finished'] is True
+                ]),
+                "totalError": len([
+                    workflow
+                    for workflow in resp['workflowStatusList']
+                    if workflow['stopped'] is True 
+                        or workflow['waiting'] is True
+                ]),
+            },
+            "memoryFree": resp['memoryFree'] / 1073741824,
+            "memoryTotal": resp['memoryTotal'] / 1073741824,
+            "memoryUsed": (resp['memoryTotal'] / 1073741824) - (resp['memoryFree'] / 1073741824),
+            "cpuCores": resp["cpuCores"],
+            "cpuProcessTime": resp["cpuProcessTime"],
+            "uptime": resp["uptime"],
+            "threadCount": resp["threadCount"],
+            "loadAvg": resp["loadAvg"],
+        }
  
     def get_pipeline(self):
         resp = requests.get(
