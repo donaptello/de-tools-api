@@ -16,6 +16,8 @@ class Settings(BaseSettings):
 
     SQLITE_DB: str
     SECRET_KEY: str
+
+    TESTING_API: bool
     
     class Config: 
         env_file = '.env'
