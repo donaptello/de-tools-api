@@ -7,7 +7,7 @@ app = APIRouter()
 
 @app.get('/status')
 def get_hop_status(): 
-    hop_service = HopService(test=True)
+    hop_service = HopService()
     results = hop_service.get_status()
     return JSONResponse(
         status_code=200,

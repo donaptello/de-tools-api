@@ -8,13 +8,13 @@ from loguru import logger
  
 class HopService:
  
-    def __init__(self, mode: str = None, test: bool = False):
+    def __init__(self, mode: str = None):
         self.__host: str = settings.APACHE_HOP_HOST
         self.__port: str = settings.APACHE_HOP_PORT
         self.__username: str = settings.APACHE_HOP_USER
         self.__password: str = settings.APACHE_HOP_PASS
         self.__mode: str = mode
-        self.__test: bool = test
+        self.__test: bool = settings.TESTING_API
 
     def __api_hop(self, method: str, route: str, param_id: str = None): 
         if self.__test: 
@@ -26,9 +26,9 @@ class HopService:
                     resp = json.load(file)
             return resp
         
-        uri = f"http://{self.__host}:{self.__port}{route}?json=y"
+        uri = f"http://{self.__host}:{self.__port}/{route}?json=y"
         if param_id is not None: 
-            uri = f"http://{self.__host}:{self.__port}{route}?id={param_id}&json=y"
+            uri = f"http://{self.__host}:{self.__port}/{route}?id={param_id}&json=y"
         
         resp = requests.request(
             method,
@@ -96,7 +96,13 @@ class HopService:
             "threadCount": resp["threadCount"],
             "loadAvg": resp["loadAvg"],
         }
- 
+    
+    def get_pipeline_v2(self): 
+        resp = self.__api_hop(
+            method="GET",
+            route="/hop/pipelineStatus" if self.__test else "pipeline"
+        )
+
     def get_pipeline(self):
         resp = requests.get(
             f"http://{self.__host}:{self.__port}/hop/status",
