@@ -5,6 +5,7 @@ import traceback
 from config.base import settings
 from bs4 import BeautifulSoup
 from loguru import logger
+from helpers import hop_helpers
  
 class HopService:
  
@@ -97,11 +98,66 @@ class HopService:
             "loadAvg": resp["loadAvg"],
         }
     
-    def get_pipeline_v2(self): 
-        resp = self.__api_hop(
-            method="GET",
-            route="/hop/pipelineStatus" if self.__test else "pipeline"
-        )
+    def get_pipeline_v2(self, params_id: str = None): 
+        if params_id is None: 
+            resp = self.__api_hop(
+                method="GET",
+                route="/hop/status" if self.__test else "status"
+            )
+        else: 
+            resp = self.__api_hop(
+                method="GET",
+                route="/hop/pipelineStatus" if self.__test else "pipeline",
+                param_id=params_id
+            )
+
+        results = []
+        if self.__mode == "Pipeline": 
+            pipeline_list = resp['pipelineStatusList']
+            for pipe in pipeline_list: 
+                results.append(
+                    {
+                        "id": pipe['id'],
+                        "name": pipe['pipelineName'],
+                        "status": pipe['statusDescription'],
+                        "startDate": pipe['executionStartDate'],
+                        "endDate": pipe['executionEndDate'],
+                        "duration": hop_helpers.durationParser(pipe['executionStartDate'], pipe['executionEndDate']),
+                        "type": "Pipeline"
+                    }
+                )
+        elif self.__mode == "Workflow": 
+            workflow_list = resp['workflowStatusList']
+            for pipe in workflow_list: 
+                results.append(
+                    {
+                        "id": pipe['id'],
+                        "name": pipe['workflowName'],
+                        "status": pipe['statusDescription'],
+                        "startDate": pipe['executionStartDate'],
+                        "endDate": pipe['executionEndDate'],
+                        "duration": hop_helpers.durationParser(pipe['executionStartDate'], pipe['executionEndDate']),
+                        "type": "Workflow"
+                    }
+                )
+        else: 
+            all_list = resp['pipelineStatusList'] + resp['workflowStatusList']
+            for pipe in all_list: 
+                results.append(
+                    {
+                        "id": pipe['id'],
+                        "name": pipe['pipelineName'] if 'pipelineName' in pipe else pipe['workflowName'],
+                        "status": pipe['statusDescription'],
+                        "startDate": pipe['executionStartDate'],
+                        "endDate": pipe['executionEndDate'],
+                        "duration": hop_helpers.durationParser(pipe['executionStartDate'], pipe['executionEndDate']),
+                        "type": "Pipeline" if 'pipelineName' in pipe else "Workflow",
+                    }
+                )
+
+        return results
+
+
 
     def get_pipeline(self):
         resp = requests.get(

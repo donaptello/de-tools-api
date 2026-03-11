@@ -18,12 +18,13 @@ def get_hop_status():
         }
     )
  
-@app.get('/pipeline-log')
+@app.get('/orchestration/{mode}')
 def get_pipeline_log(
-    mode: HopMode = Query(default=HopMode.all)
+    mode: HopMode = HopMode.all,
+    id_pipe: str = Query(default=None)
 ):
-    hop_service = HopService(mode.value)
-    results = hop_service.get_pipeline()
+    hop_service = HopService(mode=mode.value)
+    results = hop_service.get_pipeline_v2(id_pipe)
     return JSONResponse(
         status_code=200,
         content={
