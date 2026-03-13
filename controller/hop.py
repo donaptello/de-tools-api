@@ -34,9 +34,9 @@ def get_pipeline_log(
         }
     )
  
-@app.delete('/pipeline-log')
+@app.delete('/orchestration/{mode}')
 def delete_pipeline_log(
-    mode: HopMode = Query(default=HopMode.all),
+    mode: HopMode = HopMode.all,
     with_error: bool = False
 ):
     hop_service = HopService(mode.value)

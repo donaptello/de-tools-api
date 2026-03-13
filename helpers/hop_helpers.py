@@ -19,3 +19,38 @@ def durationParser(start_date: str, end_date: str) -> str:
         return f"{minutes}m {remaining_sec:.2f}s"
     else: 
         return f"{remaining_sec:.2f}s"
+
+def mapper_pipeline_data(resp: dict, mode: str, ): 
+    results = []
+    orcestration_list = []
+    if mode == "Pipeline": 
+        orcestration_list = resp['pipelineStatusList'].copy()
+    elif mode == "Workflow": 
+        orcestration_list = resp['workflowStatusList'].copy()
+    else: 
+        orcestration_list = resp['pipelineStatusList'] + resp['workflowStatusList']
+
+    for pipe in orcestration_list: 
+        results.append(
+            {
+                "id": pipe['id'],
+                "name": pipe['pipelineName'] if 'pipelineName' in pipe else pipe['workflowName'],
+                "status": pipe['statusDescription'],
+                "startDate": pipe['executionStartDate'],
+                "endDate": pipe['executionEndDate'],
+                "duration": durationParser(pipe['executionStartDate'], pipe['executionEndDate']),
+                "type": "Pipeline" if 'pipelineName' in pipe else "Workflow",
+            }
+        )
+    return results
+
+def mapper_pipeline_detail(resp: dict): 
+    return {
+        "id": resp['id'],
+        "name": resp['pipelineName'],
+        "status": resp['statusDescription'],
+        "startDate": resp['executionStartDate'],
+        "endDate": resp['executionEndDate'],
+        "duration": durationParser(resp['executionStartDate'], resp['executionEndDate']),
+        "type": "Pipeline"
+    }

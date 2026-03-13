@@ -5,7 +5,10 @@ import traceback
 from config.base import settings
 from bs4 import BeautifulSoup
 from loguru import logger
-from helpers import hop_helpers
+from helpers.hop_helpers import (
+    mapper_pipeline_data,
+    mapper_pipeline_detail
+)
  
 class HopService:
  
@@ -23,7 +26,7 @@ class HopService:
                 with open('resources/hop-status-response.json', 'r') as file: 
                     resp = json.load(file)
             else: 
-                with open('resources/hop-status-response.json', 'r') as file: 
+                with open('resources/hop-pipeline-response.json', 'r') as file: 
                     resp = json.load(file)
             return resp
         
@@ -104,60 +107,16 @@ class HopService:
                 method="GET",
                 route="/hop/status" if self.__test else "status"
             )
+            results = mapper_pipeline_data(resp, self.__mode)
+            return results
         else: 
             resp = self.__api_hop(
                 method="GET",
                 route="/hop/pipelineStatus" if self.__test else "pipeline",
                 param_id=params_id
             )
-
-        results = []
-        if self.__mode == "Pipeline": 
-            pipeline_list = resp['pipelineStatusList']
-            for pipe in pipeline_list: 
-                results.append(
-                    {
-                        "id": pipe['id'],
-                        "name": pipe['pipelineName'],
-                        "status": pipe['statusDescription'],
-                        "startDate": pipe['executionStartDate'],
-                        "endDate": pipe['executionEndDate'],
-                        "duration": hop_helpers.durationParser(pipe['executionStartDate'], pipe['executionEndDate']),
-                        "type": "Pipeline"
-                    }
-                )
-        elif self.__mode == "Workflow": 
-            workflow_list = resp['workflowStatusList']
-            for pipe in workflow_list: 
-                results.append(
-                    {
-                        "id": pipe['id'],
-                        "name": pipe['workflowName'],
-                        "status": pipe['statusDescription'],
-                        "startDate": pipe['executionStartDate'],
-                        "endDate": pipe['executionEndDate'],
-                        "duration": hop_helpers.durationParser(pipe['executionStartDate'], pipe['executionEndDate']),
-                        "type": "Workflow"
-                    }
-                )
-        else: 
-            all_list = resp['pipelineStatusList'] + resp['workflowStatusList']
-            for pipe in all_list: 
-                results.append(
-                    {
-                        "id": pipe['id'],
-                        "name": pipe['pipelineName'] if 'pipelineName' in pipe else pipe['workflowName'],
-                        "status": pipe['statusDescription'],
-                        "startDate": pipe['executionStartDate'],
-                        "endDate": pipe['executionEndDate'],
-                        "duration": hop_helpers.durationParser(pipe['executionStartDate'], pipe['executionEndDate']),
-                        "type": "Pipeline" if 'pipelineName' in pipe else "Workflow",
-                    }
-                )
-
-        return results
-
-
+            results = mapper_pipeline_detail(resp)
+            return [results]
 
     def get_pipeline(self):
         resp = requests.get(
@@ -289,3 +248,5 @@ class HopService:
                 
         return already_delete
  
+    def delete_pipeline_v2(self, with_error: bool): 
+        pass
