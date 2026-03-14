@@ -28,14 +28,12 @@ class HopService:
         param_name: str = None
     ): 
         if self.__test: 
-            logger.info(route)
             if route == "status": 
                 with open('resources/hop-status-response.json', 'r') as file: 
                     resp = json.load(file)
             else: 
                 with open('resources/hop-pipeline-response.json', 'r') as file: 
                     resp = json.load(file)
-            logger.info(resp)
             return resp
         uri = f"http://{self.__host}:{self.__port}/{route}?json=y"
         if param_id is not None: 
@@ -229,10 +227,10 @@ class HopService:
                 traceback.print_exc()
    
     def delete_pipeline(self, with_error: bool):
-        results_data, type_process = self.get_pipeline()
+        results_data = self.get_pipeline_v2()
         already_delete = []
         
-        if type_process == "Pipeline": 
+        if self.__mode == "Pipeline": 
             results_data = results_data[0]
             self.__process_delete_hit_api_hop(
                 with_error, 
@@ -240,14 +238,13 @@ class HopService:
                 already_delete
             )
 
-        elif type_process == "Workflow": 
+        elif self.__mode == "Workflow": 
             results_data = results_data[1]
             self.__process_delete_hit_api_hop(
                 with_error, 
                 results_data,
                 already_delete
             )
-
         else: 
             for result in results_data:
                 self.__process_delete_hit_api_hop(
@@ -255,7 +252,6 @@ class HopService:
                     result,
                     already_delete
                 )
-                
         return already_delete
  
     def delete_pipeline_v2(self, with_error: bool): 
