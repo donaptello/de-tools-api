@@ -20,19 +20,28 @@ class HopService:
         self.__mode: str = mode
         self.__test: bool = settings.TESTING_API
 
-    def __api_hop(self, method: str, route: str, param_id: str = None): 
+    def __api_hop(
+        self, 
+        method: str, 
+        route: str, 
+        param_id: str = None, 
+        param_name: str = None
+    ): 
         if self.__test: 
+            logger.info(route)
             if route == "status": 
                 with open('resources/hop-status-response.json', 'r') as file: 
                     resp = json.load(file)
             else: 
                 with open('resources/hop-pipeline-response.json', 'r') as file: 
                     resp = json.load(file)
+            logger.info(resp)
             return resp
-        
         uri = f"http://{self.__host}:{self.__port}/{route}?json=y"
         if param_id is not None: 
             uri = f"http://{self.__host}:{self.__port}/{route}?id={param_id}&json=y"
+        if param_id is not None and param_name is not None: 
+            uri = f"{uri}&name={param_name}"
         
         resp = requests.request(
             method,
@@ -46,7 +55,7 @@ class HopService:
     def get_status(self):
         resp = self.__api_hop(
             method="GET",
-            route="/hop/status" if self.__test else "status"
+            route="/hop/status" if not self.__test else "status"
         )
         if 'error' in resp: 
             return resp
@@ -101,19 +110,20 @@ class HopService:
             "loadAvg": resp["loadAvg"],
         }
     
-    def get_pipeline_v2(self, params_id: str = None): 
+    def get_pipeline_v2(self, params_id: str = None, params_name: str = None): 
         if params_id is None: 
             resp = self.__api_hop(
                 method="GET",
-                route="/hop/status" if self.__test else "status"
+                route="/hop/status" if not self.__test else "status"
             )
             results = mapper_pipeline_data(resp, self.__mode)
             return results
         else: 
             resp = self.__api_hop(
                 method="GET",
-                route="/hop/pipelineStatus" if self.__test else "pipeline",
-                param_id=params_id
+                route="/hop/pipelineStatus" if not self.__test else "pipeline",
+                param_id=params_id,
+                param_name=params_name
             )
             results = mapper_pipeline_detail(resp)
             return [results]

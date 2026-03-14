@@ -52,5 +52,11 @@ def mapper_pipeline_detail(resp: dict):
         "startDate": resp['executionStartDate'],
         "endDate": resp['executionEndDate'],
         "duration": durationParser(resp['executionStartDate'], resp['executionEndDate']),
+        "transformStatusList": resp['transformStatusList'],
+        "totalRead": resp['result']['nrLinesRead'],
+        "totalWritten": resp['result']['nrLinesWritten'],
+        "totalError": resp['result']['nrErrors'],
+        "totalTransform": len(resp['transformStatusList']),
+        "updatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "type": "Pipeline"
     }
