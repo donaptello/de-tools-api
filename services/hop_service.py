@@ -208,18 +208,18 @@ class HopService:
         for res in results_data:
             try:
                 if with_error and res['status'] in ["Finished (with errors)", "Stopped", "Stopped (with errors)"]:
-                    if res['type'] == 'pipeline':
+                    if res['type'] == 'Pipeline' and self.__mode in ["Pipeline", "All"]:
                         self.__process_delete_pipeline(res)
-                    elif res['type'] == 'workflow':
+                    elif res['type'] == 'Workflow' and self.__mode in ["Workflow", "All"]:
                         self.__process_delete_workflow(res)
                     already_delete.append(res)
                     continue
 
                 if res['status'] != "Finished":
                     continue
-                if res['type'] == 'pipeline':
+                if res['type'] == 'Pipeline' and self.__mode in ["Pipeline", "All"]:
                     self.__process_delete_pipeline(res)
-                elif res['type'] == 'workflow':
+                elif res['type'] == 'Workflow' and self.__mode in ["Workflow", "All"]:
                     self.__process_delete_workflow(res)
                 already_delete.append(res)
             except Exception as e:
@@ -231,7 +231,6 @@ class HopService:
         already_delete = []
         
         if self.__mode == "Pipeline": 
-            results_data = results_data[0]
             self.__process_delete_hit_api_hop(
                 with_error, 
                 results_data,
@@ -239,19 +238,17 @@ class HopService:
             )
 
         elif self.__mode == "Workflow": 
-            results_data = results_data[1]
             self.__process_delete_hit_api_hop(
                 with_error, 
                 results_data,
                 already_delete
             )
         else: 
-            for result in results_data:
-                self.__process_delete_hit_api_hop(
-                    with_error, 
-                    result,
-                    already_delete
-                )
+            self.__process_delete_hit_api_hop(
+                with_error,
+                results_data,
+                already_delete
+            )
         return already_delete
  
     def delete_pipeline_v2(self, with_error: bool): 
