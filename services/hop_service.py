@@ -7,7 +7,8 @@ from bs4 import BeautifulSoup
 from loguru import logger
 from helpers.hop_helpers import (
     mapper_pipeline_data,
-    mapper_pipeline_detail
+    mapper_pipeline_detail,
+    uptime_parser
 )
  
 class HopService:
@@ -79,7 +80,7 @@ class HopService:
                         or pipeline['paused'] is True
                 ]),
             },
-            "totalWorkflow": {
+            "workflowStatus": {
                 "total": len(resp.get("workflowStatusList")),
                 "totalRunning": len([
                     workflow
@@ -103,7 +104,7 @@ class HopService:
             "memoryUsed": (resp['memoryTotal'] / 1073741824) - (resp['memoryFree'] / 1073741824),
             "cpuCores": resp["cpuCores"],
             "cpuProcessTime": resp["cpuProcessTime"],
-            "uptime": resp["uptime"],
+            "uptime": uptime_parser(resp["uptime"]),
             "threadCount": resp["threadCount"],
             "loadAvg": resp["loadAvg"],
         }

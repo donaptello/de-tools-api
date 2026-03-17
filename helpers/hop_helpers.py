@@ -19,6 +19,11 @@ def durationParser(start_date: str, end_date: str) -> str:
         return f"{minutes}m {remaining_sec:.2f}s"
     else: 
         return f"{remaining_sec:.2f}s"
+    
+def uptime_parser(time: int): 
+    hours = (time / (1000 * 60 * 60))
+    minutes = hours * 60 - (int(hours)*60)
+    return f"{int(hours)}h {int(minutes)}m"
 
 def mapper_pipeline_data(resp: dict, mode: str, ): 
     results = []
