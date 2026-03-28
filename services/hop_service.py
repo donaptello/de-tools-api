@@ -109,13 +109,18 @@ class HopService:
             "loadAvg": resp["loadAvg"],
         }
     
-    def get_pipeline_v2(self, params_id: str = None, params_name: str = None): 
+    def get_pipeline_v2(
+        self, 
+        params_id: str = None, 
+        params_name: str = None,
+        search_name: str = None
+    ): 
         if params_id is None: 
             resp = self.__api_hop(
                 method="GET",
                 route="/hop/status" if not self.__test else "status"
             )
-            results = mapper_pipeline_data(resp, self.__mode)
+            results = mapper_pipeline_data(resp, self.__mode, search_name)
             return results
         else: 
             resp = self.__api_hop(
@@ -125,6 +130,7 @@ class HopService:
                 param_name=params_name
             )
             results = mapper_pipeline_detail(resp)
+            results['name'] = params_name
             return [results]
 
     def get_pipeline(self):

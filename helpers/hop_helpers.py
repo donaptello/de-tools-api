@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
-
+from loguru import logger
+import re
 
 def durationParser(start_date: str, end_date: str) -> str: 
     dt_start = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S.%f%z")
@@ -25,9 +26,12 @@ def uptime_parser(time: int):
     minutes = hours * 60 - (int(hours)*60)
     return f"{int(hours)}h {int(minutes)}m"
 
-def mapper_pipeline_data(resp: dict, mode: str, ): 
+def mapper_pipeline_data(resp: dict, mode: str, search_name: str): 
     results = []
     orcestration_list = []
+    search_name = None if search_name == "" else search_name
+    pattern = rf"{search_name}"
+
     if mode == "Pipeline": 
         orcestration_list = resp['pipelineStatusList'].copy()
     elif mode == "Workflow": 
@@ -36,17 +40,23 @@ def mapper_pipeline_data(resp: dict, mode: str, ):
         orcestration_list = resp['pipelineStatusList'] + resp['workflowStatusList']
 
     for pipe in orcestration_list: 
-        results.append(
-            {
-                "id": pipe['id'],
-                "name": pipe['pipelineName'] if 'pipelineName' in pipe else pipe['workflowName'],
-                "status": pipe['statusDescription'],
-                "startDate": pipe['executionStartDate'],
-                "endDate": pipe['executionEndDate'],
-                "duration": durationParser(pipe['executionStartDate'], pipe['executionEndDate']),
-                "type": "Pipeline" if 'pipelineName' in pipe else "Workflow",
-            }
-        )
+        mapped = {
+            "id": pipe['id'],
+            "name": pipe['pipelineName'] if 'pipelineName' in pipe else pipe['workflowName'],
+            "status": pipe['statusDescription'],
+            "startDate": pipe['executionStartDate'],
+            "endDate": pipe['executionEndDate'],
+            "duration": durationParser(pipe['executionStartDate'], pipe['executionEndDate']),
+            "type": "Pipeline" if 'pipelineName' in pipe else "Workflow",
+        }
+        if search_name is not None: 
+            match = re.search(pattern, mapped['name'], re.IGNORECASE)
+            logger.info(match)
+            if not match: 
+                continue
+            results.append(mapped)
+
+        results.append(mapped)
     return results
 
 def mapper_pipeline_detail(resp: dict): 

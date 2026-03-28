@@ -23,10 +23,11 @@ def get_pipeline_log(
     mode: HopMode = HopMode.all,
     id_pipe: str = Query(default=None),
     name_pipe: str = Query(default=None),
+    search_name: str = Query(default=None),
     size: int = Query(default=10)
 ):
     hop_service = HopService(mode=mode.value)
-    results = hop_service.get_pipeline_v2(id_pipe, name_pipe)
+    results = hop_service.get_pipeline_v2(id_pipe, name_pipe, search_name)
     return JSONResponse(
         status_code=200,
         content={
