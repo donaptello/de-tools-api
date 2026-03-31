@@ -78,6 +78,8 @@ class HopService:
                     if pipeline['stopped'] is True 
                         or pipeline['waiting'] is True 
                         or pipeline['paused'] is True
+                        or pipeline['statusDescription'] == "Finished (with errors)"
+                        or pipeline['statusDescription'] == "Halting"
                 ]),
             },
             "workflowStatus": {
@@ -97,6 +99,8 @@ class HopService:
                     for workflow in resp['workflowStatusList']
                     if workflow['stopped'] is True 
                         or workflow['waiting'] is True
+                        or workflow['statusDescription'] == "Finished (with errors)"
+                        or workflow['statusDescription'] == "Halting"
                 ]),
             },
             "memoryFree": resp['memoryFree'] / 1073741824,
@@ -187,7 +191,7 @@ class HopService:
         return results_all_mapped, "All"
    
     def __process_delete_pipeline(self, res: dict):
-        url = f"http://{self.__host}:{self.__port}/hop/removePipeline/?name={res['name_pipeline']}&id={res['id_pipeline']}"
+        url = f"http://{self.__host}:{self.__port}/hop/removePipeline/?name={res['name']}&id={res['id']}"
         payload = {}
         response = requests.get(
             url,
@@ -197,7 +201,7 @@ class HopService:
         print(response.text)
  
     def __process_delete_workflow(self, res: dict):
-        url = f"http://{self.__host}:{self.__port}/hop/removeWorkflow/?name={res['name_workflow']}&id={res['id_workflow']}"
+        url = f"http://{self.__host}:{self.__port}/hop/removeWorkflow/?name={res['name']}&id={res['id']}"
         payload = {}
         response = requests.get(
             url,

@@ -2,7 +2,10 @@ from datetime import datetime, timezone
 from loguru import logger
 import re
 
-def durationParser(start_date: str, end_date: str) -> str: 
+def parse_date(item):
+    return datetime.strptime(item["startDate"], "%Y-%m-%dT%H:%M:%S.%f%z")
+
+def durationParser(start_date: str, end_date: str, secondsFormat: bool = False) -> str: 
     dt_start = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S.%f%z")
     dt_end = datetime.now().astimezone(timezone.utc)
     if end_date:
@@ -14,6 +17,9 @@ def durationParser(start_date: str, end_date: str) -> str:
     hours = int(seconds // 3600)
     minutes = int((seconds % 3600) // 60)
     remaining_sec = seconds % 60
+    if secondsFormat is True: 
+        return int(seconds)
+
     if hours > 0:
         return f"{hours}h {minutes}m {remaining_sec:.2f}s"
     elif minutes > 0:
@@ -47,6 +53,7 @@ def mapper_pipeline_data(resp: dict, mode: str, search_name: str):
             "startDate": pipe['executionStartDate'],
             "endDate": pipe['executionEndDate'],
             "duration": durationParser(pipe['executionStartDate'], pipe['executionEndDate']),
+            "durationRaw": durationParser(pipe['executionStartDate'], pipe['executionEndDate'], True),
             "type": "Pipeline" if 'pipelineName' in pipe else "Workflow",
         }
         if search_name is not None: 
@@ -58,6 +65,13 @@ def mapper_pipeline_data(resp: dict, mode: str, search_name: str):
 
         results.append(mapped)
     return results
+
+def filter_hop(status: str, results: list): 
+    new_results = []
+    for result in results: 
+        if status == result['status']: 
+            new_results.append(result)
+    return new_results
 
 def mapper_pipeline_detail(resp: dict): 
     return {
