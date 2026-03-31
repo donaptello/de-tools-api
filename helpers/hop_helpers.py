@@ -58,15 +58,17 @@ def mapper_pipeline_data(resp: dict, mode: str, search_name: str):
         }
         if search_name is not None: 
             match = re.search(pattern, mapped['name'], re.IGNORECASE)
-            logger.info(match)
             if not match: 
                 continue
             results.append(mapped)
+            continue
 
         results.append(mapped)
     return results
 
 def filter_hop(status: str, results: list): 
+    if status == "All": 
+        return results
     new_results = []
     for result in results: 
         if status == result['status']: 
