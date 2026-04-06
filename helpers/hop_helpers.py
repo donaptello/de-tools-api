@@ -80,6 +80,7 @@ def mapper_pipeline_detail(resp: dict):
         "id": resp['id'],
         "name": resp['pipelineName'],
         "status": resp['statusDescription'],
+        "loggingString": resp['loggingString'],
         "startDate": resp['executionStartDate'],
         "endDate": resp['executionEndDate'],
         "duration": durationParser(resp['executionStartDate'], resp['executionEndDate']),
