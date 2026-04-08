@@ -2,6 +2,7 @@ import requests
 import json
 import traceback
  
+from loguru import logger
 from config.base import settings
 from bs4 import BeautifulSoup
 from loguru import logger
@@ -20,6 +21,14 @@ class HopService:
         self.__password: str = settings.APACHE_HOP_PASS
         self.__mode: str = mode
         self.__test: bool = settings.TESTING_API
+        self.__mode_options: dict = {
+            "remove_pipeline": "removePipeline",
+            "remove_workflow": "removeWorkflow",
+            "stop_pipeline": "stopPipeline",
+            "stop_workflow": "stopWorkflow",
+            "start_pipeline": "startPipeline",
+            "start_workflow": "startWorkflow"
+        }
 
     def __api_hop(
         self, 
@@ -50,6 +59,24 @@ class HopService:
         if resp.status_code == 200:
             return resp.json()
         return {'error': resp.text}
+    
+    def __api_hop_options(
+        self, 
+        res: dict,
+        mode: str,
+        options: str
+    ): 
+        modes = f"{options}_{mode}"
+        url = f"http://{self.__host}:{self.__port}/hop/{self.__mode_options[modes]}/?name={res['name']}&id={res['id']}"
+        response = requests.get(
+            url, 
+            auth=(self.__username, self.__password),
+            data={}
+        )
+        logger.info(response.text)
+        if response.status_code == 200: 
+            return "OK"
+        raise Exception("Error API")
     
     def get_status(self):
         resp = self.__api_hop(
@@ -189,26 +216,6 @@ class HopService:
         elif self.__mode == "Workflow":
             return results_all_mapped, "Workflow"
         return results_all_mapped, "All"
-   
-    def __process_delete_pipeline(self, res: dict):
-        url = f"http://{self.__host}:{self.__port}/hop/removePipeline/?name={res['name']}&id={res['id']}"
-        payload = {}
-        response = requests.get(
-            url,
-            auth=(self.__username, self.__password),
-            data=payload
-        )
-        print(response.text)
- 
-    def __process_delete_workflow(self, res: dict):
-        url = f"http://{self.__host}:{self.__port}/hop/removeWorkflow/?name={res['name']}&id={res['id']}"
-        payload = {}
-        response = requests.get(
-            url,
-            auth=(self.__username, self.__password),
-            data=payload
-        )
-        print(response.text)
 
     def __process_delete_hit_api_hop(
         self, 
@@ -220,22 +227,58 @@ class HopService:
             try:
                 if with_error and res['status'] in ["Finished (with errors)", "Stopped", "Stopped (with errors)"]:
                     if res['type'] == 'Pipeline' and self.__mode in ["Pipeline", "All"]:
-                        self.__process_delete_pipeline(res)
+                        self.__api_hop_options(res, mode="pipeline", options="remove")
                     elif res['type'] == 'Workflow' and self.__mode in ["Workflow", "All"]:
-                        self.__process_delete_workflow(res)
+                        self.__api_hop_options(res, mode="workflow", options="remove")
                     already_delete.append(res)
                     continue
 
                 if res['status'] != "Finished":
                     continue
                 if res['type'] == 'Pipeline' and self.__mode in ["Pipeline", "All"]:
-                    self.__process_delete_pipeline(res)
+                    self.__api_hop_options(res, mode="pipeline", options="remove")
                 elif res['type'] == 'Workflow' and self.__mode in ["Workflow", "All"]:
-                    self.__process_delete_workflow(res)
+                    self.__api_hop_options(res, mode="workflow", options="remove")
                 already_delete.append(res)
             except Exception as e:
                 logger.error("Error: {}", str(e))
                 traceback.print_exc()
+
+    def stop_pipeline(self, id_pipe: str, name_pipe: str): 
+        if self.__mode == "Pipeline": 
+            self.__api_hop_options(
+                res={"id": id_pipe, "name": name_pipe},
+                mode="pipeline",
+                options="stop"
+            )
+            return "OK"
+        elif self.__mode == "Workflow": 
+            self.__api_hop_options(
+                res={"id": id_pipe, "name": name_pipe},
+                mode="workflow",
+                options="stop"
+            )
+            return "OK"
+        else: 
+            return None
+        
+    def start_pipeline(self, id_pipe: str, name_pipe: str): 
+        if self.__mode == "Pipeline": 
+            self.__api_hop_options(
+                res={"id": id_pipe, "name": name_pipe},
+                mode="pipeline",
+                options="start"
+            )
+            return "OK"
+        elif self.__mode == "Workflow": 
+            self.__api_hop_options(
+                res={"id": id_pipe, "name": name_pipe},
+                mode="workflow",
+                options="start"
+            )
+            return "OK"
+        else: 
+            return None
    
     def delete_pipeline(self, with_error: bool):
         results_data = self.get_pipeline_v2()
@@ -261,6 +304,3 @@ class HopService:
                 already_delete
             )
         return already_delete
- 
-    def delete_pipeline_v2(self, with_error: bool): 
-        pass

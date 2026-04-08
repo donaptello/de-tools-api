@@ -19,3 +19,8 @@ class Orders(Enum):
 class OrdersBy(Enum): 
     startDate: str = "startDate"
     duration: str = "durationRaw"
+
+class OptionsMode(Enum): 
+    none: str = None
+    start: str = "start"
+    stop: str = "stop"

@@ -2,12 +2,18 @@ from fastapi import APIRouter, Query
 from services.hop_service import HopService
 from helpers.hop_helpers import filter_hop, parse_date
 from fastapi.responses import JSONResponse
-from constants.hop import HopMode, StatusHop, Orders, OrdersBy
+from constants.hop import (
+    HopMode, 
+    StatusHop, 
+    Orders, 
+    OrdersBy,
+    OptionsMode
+)
  
 app = APIRouter()
 
 @app.get('/status')
-def get_hop_status(): 
+def hop_status(): 
     hop_service = HopService()
     results = hop_service.get_status()
     return JSONResponse(
@@ -20,7 +26,7 @@ def get_hop_status():
     )
  
 @app.get('/orchestration/{mode}')
-def get_pipeline_log(
+def pipeline_log(
     mode: HopMode = HopMode.all,
     id_pipe: str = Query(default=None),
     name_pipe: str = Query(default=None),
@@ -47,9 +53,58 @@ def get_pipeline_log(
             "data": results[:size]
         }
     )
+
+@app.get('/orchestration/{mode}/{options}')
+def options_mode(
+    mode: HopMode = HopMode.all,
+    options: OptionsMode = OptionsMode.none,
+    id_pipe: str = Query(default=None),
+    name_pipe: str = Query(default=None),
+): 
+    result = None
+    if options.value is None: 
+        return JSONResponse(
+            status_code=401,
+            content={
+                "statusCode": 401,
+                "messages": "options must be input",
+                "data": None
+            }
+        )
+    hop_service = HopService(mode=mode.value)
+    if options.value == "start": 
+        result = hop_service.start_pipeline(id_pipe, name_pipe)
+    elif options.value == "stop":
+        result = hop_service.stop_pipeline(id_pipe, name_pipe)
+
+    if result is None: 
+        return JSONResponse(
+            status_code=404,
+            content={
+                "statusCode": 404,
+                "messages": "success",
+                "data": {
+                    "id": id_pipe,
+                    "name": name_pipe,
+                    "status": f"success {options.value}"
+                }
+            }
+        )
+    return JSONResponse(
+        status_code=200,
+        content={
+            "statusCode": 200,
+            "messages": "success",
+            "data": {
+                "id": id_pipe,
+                "name": name_pipe,
+                "status": f"success {options.value}"
+            }
+        }
+    )
  
 @app.delete('/orchestration/{mode}')
-def delete_pipeline_log(
+def pipeline_log(
     mode: HopMode = HopMode.all,
     with_error: bool = False
 ):
