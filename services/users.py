@@ -8,7 +8,7 @@ from config.base import settings
 from config.pg_config import JdbcConfig
 from sqlalchemy.dialects.postgresql import insert
 from services.auth_service import AuthService
-
+from models.users.users_payload import Roles
 
 class UsersService: 
     def __init__(self):
@@ -53,7 +53,7 @@ class UsersService:
                     "user_full_name": "admin",
                     "username": "admin",
                     "password": "admin",
-                    "role": "ADMIN"
+                    "role": Roles.admin
                 }
             )
             logger.info("Created Default USER -> admin | admin")
