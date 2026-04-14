@@ -279,6 +279,24 @@ class HopService:
             return "OK"
         else: 
             return None
+        
+    def remove_pipeline(self, id_pipe: str, name_pipe: str): 
+        if self.__mode == "Pipeline": 
+            self.__api_hop_options(
+                res={"id": id_pipe, "name": name_pipe},
+                mode="pipeline",
+                options="remove"
+            )
+            return "OK"
+        elif self.__mode == "Workflow": 
+            self.__api_hop_options(
+                res={"id": id_pipe, "name": name_pipe},
+                mode="workflow",
+                options="remove"
+            )
+            return "OK"
+        else: 
+            return None
    
     def delete_pipeline(self, with_error: bool):
         results_data = self.get_pipeline_v2()

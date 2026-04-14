@@ -76,6 +76,17 @@ def options_mode(
         result = hop_service.start_pipeline(id_pipe, name_pipe)
     elif options.value == "stop":
         result = hop_service.stop_pipeline(id_pipe, name_pipe)
+    elif options.value == "remove": 
+        result = hop_service.remove_pipeline(id_pipe, name_pipe)
+    else: 
+        return JSONResponse(
+            status_code=404,
+            content={
+                "statusCode": 404,
+                "messages": "options not found",
+                "data": None
+            }
+        )
 
     if result is None: 
         return JSONResponse(

@@ -24,3 +24,4 @@ class OptionsMode(Enum):
     none: str = None
     start: str = "start"
     stop: str = "stop"
+    remove: str = "remove"
