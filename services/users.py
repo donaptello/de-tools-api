@@ -3,6 +3,7 @@ import sqlite3
 import hashlib
 
 from datetime import datetime
+from loguru import logger
 from config.base import settings
 from config.pg_config import JdbcConfig
 from sqlalchemy.dialects.postgresql import insert
@@ -42,6 +43,24 @@ class UsersService:
         conn.commit()
         cursor.close()
         conn.close()
+
+        conn = self.__jdbc_obj.client_sqlite()
+        df = pd.read_sql("SELECT id, username FROM users WHERE username = 'admin'", con=conn)
+        conn.connection.close()
+        if df.shape[0] == 0: 
+            self.insert_data(
+                {
+                    "user_full_name": "admin",
+                    "username": "admin",
+                    "password": "admin",
+                    "role": "ADMIN"
+                }
+            )
+            logger.info("Created Default USER -> admin | admin")
+        else: 
+            logger.info("Already have default USER -> admin | admin")
+
+
 
     def get_users(self, name: str, role: str): 
         conn = self.__jdbc_obj.client_sqlite()
