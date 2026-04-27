@@ -75,12 +75,29 @@ def filter_hop(status: str, results: list):
             new_results.append(result)
     return new_results
 
+def progression_pipeline(transforms: list): 
+    total_steps = len(transforms)
+    finished_steps = sum(1 for t in transforms if t["statusDescription"] == "Finished")
+
+    step_progress = finished_steps / total_steps
+
+    total_rows = max(t["linesRead"] for t in transforms)
+    processed_rows = max(t["linesInput"] for t in transforms)
+
+    row_progress = processed_rows / total_rows if total_rows else 0
+
+    progress = (step_progress * 0.6) + (row_progress * 0.4)
+
+    return round(progress * 100, 2)
+
+
 def mapper_pipeline_detail(resp: dict): 
     return {
         "id": resp['id'],
         "name": resp['pipelineName'],
         "status": resp['statusDescription'],
         "loggingString": resp['loggingString'],
+        "progressPercentage": progression_pipeline(resp['transformStatusList']),
         "startDate": resp['executionStartDate'],
         "endDate": resp['executionEndDate'],
         "duration": durationParser(resp['executionStartDate'], resp['executionEndDate']),
