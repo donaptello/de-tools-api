@@ -6,8 +6,6 @@ COPY . /app
 
 RUN pip install --upgrade pip
 
-RUN apt-get update
-
 RUN apt-get -y install gcc libpq5 libpq-dev
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt --timeout 300
