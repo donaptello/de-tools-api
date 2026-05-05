@@ -2,6 +2,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse, HTMLResponse
 from services.connection import ConnectionService
+from config.base import settings
 from services.users import UsersService
 from contextlib import asynccontextmanager
 from loguru import logger
@@ -17,6 +18,7 @@ from controller import (
 async def lifespan(app: FastAPI):
     logger.info("Starting API")
     logger.info("Creating sqlite if not exists")
+    logger.info("Path location sqlite: {}", settings.SQLITE_DB)
     connect_svc = ConnectionService()
     connect_svc.create_table()
     users_svc = UsersService()
