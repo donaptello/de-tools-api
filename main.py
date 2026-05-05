@@ -1,3 +1,5 @@
+import os 
+
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse, HTMLResponse
@@ -17,6 +19,13 @@ from controller import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting API")
+
+    logger.info("Checking directory resources is exists?")
+    if not os.path.exists('./resources'): 
+        logger.info("Not found directory ./resources, process create...")
+        os.makedirs('./resources')
+        logger.info("Directory ./resources created!")
+
     logger.info("Creating sqlite if not exists")
     logger.info("Path location sqlite: {}", settings.SQLITE_DB)
     connect_svc = ConnectionService()
