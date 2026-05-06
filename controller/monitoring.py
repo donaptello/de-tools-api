@@ -4,6 +4,7 @@ import json
 from fastapi import APIRouter, Query, Depends
 from loguru import logger
 from services.monitoring_service import MonitoringService
+from services.pipeline_service import PipelineService
 from fastapi.responses import JSONResponse
 from constants.monitoring import WidgetEnum
 from models.monitoring.monitoring_payload import MonitoringParameterPayload, Layer, Flag
@@ -44,6 +45,7 @@ def monitoring(
 def widget(
     type: WidgetEnum = WidgetEnum.TOTAL_CARD,
     monitoring_obj: MonitoringService = Depends(),
+    pipeline_obj: PipelineService = Depends()
 ): 
     start_time = time.time()
     results = []
@@ -63,7 +65,13 @@ def widget(
             if res['status'] == "total_table": 
                 result_mapped['totalTable'] = res['total']
                 continue
-
+    elif type.value == "status_pipeline": 
+        results = pipeline_obj.get_status_pipeline()
+        result_mapped = {
+            "success": results[0]['success_pipeline'],
+            "total": results[0]['total_pipeline'],
+            "failed": results[0]['failed_pipeline'],
+        }
         
     return JSONResponse(
         status_code=200,
