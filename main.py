@@ -1,6 +1,7 @@
 import os 
 
 from fastapi.middleware.cors import CORSMiddleware
+from config.base import settings
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse, HTMLResponse
 from services.connection import ConnectionService
@@ -10,6 +11,7 @@ from contextlib import asynccontextmanager
 from loguru import logger
 from controller import (
     hop,
+    hop_management,
     monitoring,
     connection,
     users,
@@ -43,9 +45,9 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    allow_origins=["*"]
+    allow_methods=settings.API_METHOD.split(","),
+    allow_headers=settings.API_HEADER.split(","),
+    allow_origins=settings.API_ORIGINS.split(",")
 )
  
 @app.get('/', include_in_schema=False)
@@ -72,6 +74,7 @@ async def rapidoc():
     """
  
 app.include_router(hop.app, prefix='/v1/hop', tags=['Hop Service'])
+app.include_router(hop_management.app, prefix='/v1/hop', tags=['Hop Management'])
 app.include_router(connection.app, prefix='/v1/connection', tags=['Connection Service'])
 app.include_router(monitoring.app, prefix='/v1/monitoring', tags=['Monitoring Service'])
 app.include_router(users.app, prefix='/v1/users', tags=['Users Management Service'])

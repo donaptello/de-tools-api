@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     APACHE_HOP_PORT: str
     APACHE_HOP_USER: str
     APACHE_HOP_PASS: str 
+    APACHE_HOP_DIRECTORY_PROJECT: str
+
+    API_METHOD: str 
+    API_HEADER: str
+    API_ORIGINS: str
 
     SQLITE_DB: str
     SECRET_KEY: str

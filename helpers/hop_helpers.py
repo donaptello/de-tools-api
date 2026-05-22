@@ -90,6 +90,8 @@ def progression_pipeline(transforms: list):
 
     return round(progress * 100, 2)
 
+def mapper_pipeline(result: dict): 
+    pass
 
 def mapper_pipeline_detail(resp: dict): 
     return {

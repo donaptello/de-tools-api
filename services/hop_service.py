@@ -27,7 +27,8 @@ class HopService:
             "stop_pipeline": "stopPipeline",
             "stop_workflow": "stopWorkflow",
             "start_pipeline": "startPipeline",
-            "start_workflow": "startWorkflow"
+            "start_workflow": "startWorkflow",
+            "pipelineImage": "pipelineImage",
         }
 
     def __api_hop(
