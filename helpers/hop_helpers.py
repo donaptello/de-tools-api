@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 from loguru import logger
+
+import jmespath
 import re
 
 def parse_date(item):
@@ -110,4 +112,24 @@ def mapper_pipeline_detail(resp: dict):
         "totalTransform": len(resp['transformStatusList']),
         "updatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "type": "Pipeline"
+    }
+
+def mapper_flow(raw: dict): 
+    return {
+        "nodes": [
+            {
+                "id": transform['name'],
+                "type": transform['type'],
+                "label": transform['name'],
+                "properties": transform
+            }
+            for transform in jmespath.search('pipeline.transform[*]', raw)
+        ],
+        "edges": [
+            {
+                "source": order['from'],
+                "target": order['to']
+            }
+            for order in jmespath.search('pipeline.order.hop', raw)        
+        ]
     }

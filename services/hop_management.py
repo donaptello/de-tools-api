@@ -3,6 +3,7 @@ import xmltodict
 import glob
 
 from config.base import settings
+from helpers.hop_helpers import mapper_flow
 
 
 class HopManagementService: 
@@ -26,4 +27,4 @@ class HopManagementService:
     def read_file(self, path: str): 
         with open(f"{self.__base_path}/{path}", 'r') as file: 
             data = xmltodict.parse(file.read())
-        return data
+        return mapper_flow(data)
