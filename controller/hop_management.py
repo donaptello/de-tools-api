@@ -39,12 +39,23 @@ def read_pipeline(
     path: str = Query(),
     hop_mangement_svc: HopManagementService = Depends()
 ): 
-    results = hop_mangement_svc.read_file(path)
-    return JSONResponse(
-        status_code=200,
-        content={
-            "statusCode": 200,
-            "messages": "success",
-            "data": results
-        }
-    )
+    try: 
+        results = hop_mangement_svc.read_file(path)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "statusCode": 200,
+                "messages": "success",
+                "data": results
+            }
+        )
+    except FileNotFoundError as err: 
+        return JSONResponse(
+            status_code=404,
+            content={
+                "statusCode": 404,
+                "messages": "Not Found",
+                "data": None,
+                "error": str(err)
+            }
+        )
