@@ -115,21 +115,39 @@ def mapper_pipeline_detail(resp: dict):
     }
 
 def mapper_flow(raw: dict): 
+
+    transform_error_handling = jmespath.search('pipeline.transform_error_handling.error', raw)
+    edges = []
+    for order in jmespath.search('pipeline.order.hop', raw): 
+        payload = {
+            "id": f"{order['from']}-{order['to']}",
+            "source": order['from'],
+            "target": order['to'],
+            "status": "SUCCESS"
+        }
+
+        if transform_error_handling is not None: 
+            source_error = transform_error_handling['source_transform']
+            target_error = transform_error_handling['target_transform']
+
+            if source_error == payload['source'] and target_error == payload['target']:
+                payload['status'] = "ERROR"
+        
+        edges.append(payload)
+
     return {
         "nodes": [
             {
                 "id": transform['name'],
                 "type": transform['type'],
                 "label": transform['name'],
+                "position": {
+                    "x": transform['GUI']['xloc'],
+                    "y": transform['GUI']['yloc']
+                },
                 "properties": transform
             }
             for transform in jmespath.search('pipeline.transform[*]', raw)
         ],
-        "edges": [
-            {
-                "source": order['from'],
-                "target": order['to']
-            }
-            for order in jmespath.search('pipeline.order.hop', raw)        
-        ]
+        "edges": edges
     }
