@@ -17,6 +17,9 @@ from controller import (
     users,
     login
 )
+from controller.v2 import (
+    monitoring as monitoring_v2
+)
  
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -76,7 +79,8 @@ async def rapidoc():
 app.include_router(hop.app, prefix='/v1/hop', tags=['Hop Service'])
 app.include_router(hop_management.app, prefix='/v1/hop', tags=['Hop Management'])
 app.include_router(connection.app, prefix='/v1/connection', tags=['Connection Service'])
-app.include_router(monitoring.app, prefix='/v1/monitoring', tags=['Monitoring Service'])
+app.include_router(monitoring.app, prefix='/v1/monitoring', tags=['Monitoring Service'], deprecated=True)
+app.include_router(monitoring_v2.app, prefix='/v2/monitoring', tags=['Monitoring Service V2'])
 app.include_router(users.app, prefix='/v1/users', tags=['Users Management Service'])
 app.include_router(login.app, prefix='/v1/auth', tags=['Auth Service'])
 
